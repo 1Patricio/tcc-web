@@ -25,9 +25,19 @@ export function useAuthService() {
     return response.data;
   }
 
+  async function logout() {
+    try {
+      localStorage.removeItem('token')
+      delete api.defaults.headers.common['Authorization']
+    } catch(error){
+      throw error
+    }
+  }
+
   return {
     register,
     login,
-    refresh
+    refresh,
+    logout,
   };
 }

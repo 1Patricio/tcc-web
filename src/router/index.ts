@@ -34,6 +34,30 @@ const router = createRouter({
             requiresAuth: true
           }
         },
+        {
+          path: 'processos',
+          name: 'processos',
+          component: () => import('@/pages/ProcessosPage.vue'),
+          meta: {
+            requiresAuth: true
+          }
+        },
+        {
+          path: 'clientes',
+          name: 'clientes',
+          component: () => import('@/pages/ClientesPage.vue'),
+          meta: {
+            requiresAuth: true
+          }
+        },
+        {
+          path: 'documentos',
+          name: 'documentos',
+          component: () => import('@/pages/DocumentosPage.vue'),
+          meta: {
+            requiresAuth: true
+          }
+        },
       ]
     }
   ],
