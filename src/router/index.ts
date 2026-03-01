@@ -6,9 +6,7 @@ const router = createRouter({
     {
       path: '/',
       component: () => import('@/layouts/LoginLayout.vue'),
-      meta: {
-        requiresAuth: false
-      },
+      meta: { requiresAuth: false },
       children: [
         {
           path: '',
@@ -23,57 +21,57 @@ const router = createRouter({
       ]
     },
     {
-      path: '/',
+      path: '/app', 
       component: () => import('@/layouts/DefaultLayout.vue'),
       children: [
+        {
+          path: '',
+          redirect: { name: 'home' }  
+        },
         {
           path: 'home',
           name: 'home',
           component: () => import('@/pages/HomePage.vue'),
-          meta: {
-            requiresAuth: true
-          }
+          meta: { requiresAuth: true }
         },
         {
           path: 'processos',
           name: 'processos',
           component: () => import('@/pages/ProcessosPage.vue'),
-          meta: {
-            requiresAuth: true
-          }
+          meta: { requiresAuth: true }
         },
         {
           path: 'clientes',
           name: 'clientes',
           component: () => import('@/pages/ClientesPage.vue'),
-          meta: {
-            requiresAuth: true
-          }
+          meta: { requiresAuth: true }
         },
         {
           path: 'documentos',
           name: 'documentos',
           component: () => import('@/pages/DocumentosPage.vue'),
-          meta: {
-            requiresAuth: true
-          }
+          meta: { requiresAuth: true }
         },
       ]
+    },
+    {
+      path: '/:pathMatch(.*)*',  // rota 404
+      redirect: { name: 'login' }
     }
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const token = localStorage.getItem('token')
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
   if (requiresAuth && !token) {
-    next({ name: 'login'})
-  } else if(!requiresAuth && token && to.name === 'login') {
-    next({ name: 'home'})
-  } else {
-    next()
+    return { name: 'login' }
+  } else if (!requiresAuth && token && to.name === 'login') {
+    return { name: 'home' }
   }
+
+  return true
 })
 
 export default router
