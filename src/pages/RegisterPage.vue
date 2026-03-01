@@ -4,27 +4,35 @@
       <div class="col-12 col-md-6 flex flex-center bg-grey-2 q-pa-md">
         <div class="text-center">
           <q-img
-            src="/undraw/login-icon.svg"
+            src="/undraw/register-icon.svg"
             class="q-mx-auto q-mb-md"
             style="max-width: 300px"
             contain
           />
-          <h4 class="text-primary text-bold q-mb-sm">INTERM</h4>
-          <p class="text-terciary">Plataforma gerenciamento de processos</p>
+          <h4 class="text-secondary text-bold q-mb-sm">Cards Marketlace</h4>
+          <p class="text-grey-darken-1">Plataforma de trocas de cartas</p>
         </div>
       </div>
       <div class="col-12 col-md-6 flex flex-center text-center">
         <div class="q-pa-md" style="width: 100%;">
           <q-form
+            v-model="valid"
             style="max-width: 500px; margin: auto;"
             class="q-glutter-md"
-            ref="formRef"
-            @submit.prevent="handleSubmit"
+            @submit.prevent="handleSubmit()"
           >
             <div class="text-center q-mb-lg">
-              <h2 class="text-secondary text-bold q-mb-sm">Login</h2>
-              <p class="text-grey">Faça o login na sua conta!</p>
+              <h4 class="text-secondary text-bold q-mb-sm">Faça seu cadastro</h4>
+              <p class="text-grey">Preencha seus dados para logar</p>
             </div>
+
+            <q-input
+              outlined
+              v-model="nome"
+              type="text"
+              label="Nome"
+              class="q-mb-md"
+            />
 
             <q-input
               outlined
@@ -46,25 +54,20 @@
             >
               <template v-slot:append>
                 <q-icon
-                  :name="passwordIsVisible ? 'visibility_off' : 'visibility'"
+                  :nome="passwordIsVisible ? 'visibility_off' : 'visibility'"
                   @click="showPassword"
                 />
               </template>
             </q-input>
 
-            <q-card-section v-if="error" class="text-center q-pa-none">
-              <p class="text-red-6">{{ error }}</p>
-            </q-card-section>
-
             <q-btn
               block
-              unelevated
               color="secondary"
               size="large"
+              label="Cadastrar"
+              :disable="isDisabled"
               style="width: 100%;"
               class="q-mb-sm"
-              label="Entrar"
-              :disable="isDisabled"
               type="submit"
             />
 
@@ -73,15 +76,15 @@
             </div>
 
             <q-btn
-              :to="{ name: 'register' }"
+              :to="{ name: 'login' }"
               block
               outline
               color="primary"
               size="large"
               style="width: 100%;"
-              class="q-mb-sm"
+              class="q-mb-sm rounded-borders"
             >
-              Cadastre-se
+              Tenho uma conta
             </q-btn>
           </q-form>
         </div>
@@ -91,29 +94,30 @@
 </template>
 
 <script setup lang="ts">
-import { useApi } from '@/composables/useApi';
-import { useNotification } from '@/composables/useNotification';
-import { useAuthService } from '@/services/api/auth.service';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import type { QForm } from 'quasar'
+import { useNotification } from '@/composables/useNotification';
+import { useApi } from '@/composables/useApi';
+import { useAuthService } from '@/services/api/auth.service';
 
-const api = useApi()
 const notification = useNotification()
+const api = useApi()
 const router = useRouter()
 const authService = useAuthService()
 
+const nome = ref('');
 const email = ref('');
 const password = ref('');
+const error = ref<string | null>(null)
+
 const passwordIsVisible = ref(false)
+const valid = ref(false)
 
 const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.){3}[0-9]{1,3}|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
-const error = ref<string | null>(null)
-
-const formRef = ref<InstanceType<typeof QForm> | null>(null)
 
 const isDisabled = computed(() => {
+  if (!nome.value) return true
   if (!email.value) return true
   if (!password.value) return true
   if (password.value.length < 6) return true
@@ -122,12 +126,37 @@ const isDisabled = computed(() => {
   return false
 })
 
-function minLength(val: string, length = 6, fieldName = 'Senha') {
-  return val.length >= length || `${fieldName} deve ter no mínimo ${length} caracteres`
+async function createUser() {
+  try {
+    await authService.register({
+      nome: nome.value,
+      email: email.value,
+      password: password.value
+    })
+
+    notification.success('Usuário cadastrado com sucesso! Faça seu login')
+    router.push({ name: 'login' })
+  } catch (error: any) {
+    if (error.response) {
+      notification.error('Não foi possível realizar o cadastro. Erro:' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
+      console.error('ERRO', error.data)
+    }
+  }
+}
+
+async function handleSubmit() {
+  if (valid) {
+    notification.error('Formulário incompleto')
+  }
+  createUser()
 }
 
 function requiredField(val: string, fieldName = 'Campo') {
   return val.length > 0 || `${fieldName} é obrigatório`
+}
+
+function minLength(val: string, length = 6, fieldName = 'Senha') {
+  return val.length >= length || `${fieldName} deve ter no mínimo ${length} caracteres`
 }
 
 function isValidEmail(email: string): boolean {
@@ -140,40 +169,5 @@ function emailRule(val: string) {
 
 function showPassword() {
   passwordIsVisible.value = !passwordIsVisible.value
-}
-
-async function handleSubmit() {
-  if (!formRef.value) return
-
-  const isValid = await formRef.value.validate()
-  
-  if (!isValid) {
-    notification.error('Formulário inválido')
-    return
-  }
-
-  loginUser()
-}
-
-async function loginUser() {
-  try {
-    const response = await authService.login({
-      email: email.value,
-      password: password.value
-    }) 
-
-    if (response?.token) {
-      localStorage.setItem('token', response.token)
-      notification.success('Login realizado com sucesso')
-      router.push({ name: 'home' })
-    } else {
-      notification.error('Token não encontrado')
-    }
-  } catch (error: any) {
-    if (error.response) {
-      notification.error('Não foi possível realizar o login. Erro:' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
-      console.error('ERRO', error.data)
-    }
-  }
 }
 </script>
