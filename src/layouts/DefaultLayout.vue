@@ -118,7 +118,6 @@ const nameUserAuth = ref('Bem Vindo!')
 
 onMounted(async () => {
   const response = await authService.refresh()
-  console.log(response)
   nameUserAuth.value = response.user.nome
 })
 
