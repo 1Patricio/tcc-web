@@ -9,16 +9,16 @@
             style="max-width: 300px"
             contain
           />
-          <h4 class="text-secondary text-bold q-mb-sm">Cards Marketlace</h4>
-          <p class="text-grey-darken-1">Plataforma de trocas de cartas</p>
+          <h4 class="text-primary text-bold q-mb-sm">INTERM</h4>
+          <p class="text-terciary">Plataforma gerenciamento de processos</p> 
         </div>
       </div>
       <div class="col-12 col-md-6 flex flex-center text-center">
         <div class="q-pa-md" style="width: 100%;">
           <q-form
-            v-model="valid"
             style="max-width: 500px; margin: auto;"
             class="q-glutter-md"
+            ref="formRef"
             @submit.prevent="handleSubmit()"
           >
             <div class="text-center q-mb-lg">
@@ -60,6 +60,10 @@
               </template>
             </q-input>
 
+            <q-card-section v-if="error" class="text-center q-pa-none">
+              <p class="text-red-6">{{ error }}</p>
+            </q-card-section>
+
             <q-btn
               block
               color="secondary"
@@ -97,11 +101,10 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useNotification } from '@/composables/useNotification';
-import { useApi } from '@/composables/useApi';
 import { useAuthService } from '@/services/api/auth.service';
+import type { QForm } from 'quasar'
 
 const notification = useNotification()
-const api = useApi()
 const router = useRouter()
 const authService = useAuthService()
 
@@ -109,12 +112,11 @@ const nome = ref('');
 const email = ref('');
 const password = ref('');
 const error = ref<string | null>(null)
+const formRef = ref<InstanceType<typeof QForm> | null>(null)
 
 const passwordIsVisible = ref(false)
-const valid = ref(false)
 
 const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.){3}[0-9]{1,3}|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-
 
 const isDisabled = computed(() => {
   if (!nome.value) return true
@@ -145,8 +147,13 @@ async function createUser() {
 }
 
 async function handleSubmit() {
-  if (valid) {
-    notification.error('Formulário incompleto')
+  if (!formRef.value) return
+
+  const isValid = await formRef.value.validate()
+  
+  if (!isValid) {
+    notification.error('Formulário inválido')
+    return
   }
   createUser()
 }
