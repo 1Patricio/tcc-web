@@ -4,8 +4,12 @@ export function createBaseService(resource: any) {
   const api = useApi()
 
   async function getAll(params = {}) {
-    const response = await api.get(resource, { params })
-    return response.data
+    try {
+      const response = await api.get(resource, { params })
+      return response.data
+    } catch (error) {
+      throw error
+    }
   }
 
   async function getTotal(params = {}) {

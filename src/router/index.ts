@@ -11,12 +11,12 @@ const router = createRouter({
         {
           path: '',
           name: 'login',
-          component: () => import('@/pages/LoginPage.vue')
+          component: () => import('@/pages/auth/LoginPage.vue')
         },
         {
           path: 'register',
           name: 'register',
-          component: () => import('@/pages/RegisterPage.vue')
+          component: () => import('@/pages/auth/RegisterPage.vue')
         }
       ]
     },
@@ -37,19 +37,49 @@ const router = createRouter({
         {
           path: 'processos',
           name: 'processos',
-          component: () => import('@/pages/ProcessosPage.vue'),
+          component: () => import('@/pages/processos/ProcessosPage.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'processos/:id',
+          name: 'processo-view',
+          component: () => import('@/pages/processos/ProcessoCadastroEdicao.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'processos/novo',
+          name: 'processo-form',
+          component: () => import('@/pages/processos/ProcessoCadastroEdicao.vue'),
           meta: { requiresAuth: true }
         },
         {
           path: 'clientes',
           name: 'clientes',
-          component: () => import('@/pages/ClientesPage.vue'),
+          component: () => import('@/pages/clientes/ClientesPage.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'clientes',
+          name: 'clientes',
+          component: () => import('@/pages/clientes/ClientesPage.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'clientes/:id',
+          name: 'cliente-view',
+          component: () => import('@/pages/clientes/ClienteCadastroEdicao.vue'),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: 'clientes/novo',
+          name: 'cliente-form',
+          component: () => import('@/pages/clientes/ClienteCadastroEdicao.vue'),
           meta: { requiresAuth: true }
         },
         {
           path: 'documentos',
           name: 'documentos',
-          component: () => import('@/pages/DocumentosPage.vue'),
+          component: () => import('@/pages/documentos/DocumentosPage.vue'),
           meta: { requiresAuth: true }
         },
       ]
