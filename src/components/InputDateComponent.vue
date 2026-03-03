@@ -5,7 +5,7 @@
     </p>
   </div>
 
-  <q-input :dense="dense" :outlined="outlined" v-model="model" mask="##/##/####"">
+  <q-input :dense="dense" :outlined="outlined" v-model="model" mask="##/##/####">
     <template v-slot:append>
       <q-icon name="event" class="cursor-pointer">
         <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -25,7 +25,7 @@ import { computed } from 'vue'
 import type { QInputProps } from 'quasar'
 
 const props = defineProps<{
-  modelValue: string
+  modelValue: string | null
   label: string
   type?: QInputProps['type']
   outlined?: boolean
