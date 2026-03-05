@@ -82,7 +82,7 @@
               </q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple :to="{name: 'documentos'}" class="q-mt-sm">
+            <q-item clickable v-ripple :to="{name: 'pastas'}" class="q-mt-sm">
               <q-item-section avatar>
                 <q-icon name="folders" color="white" />
               </q-item-section>

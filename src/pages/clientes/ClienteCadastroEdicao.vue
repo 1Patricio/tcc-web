@@ -146,7 +146,6 @@ onMounted(async () => {
       idProcesso.value = idRota
       const response = await clienteService.getById(idProcesso.value)
       formData.value = response
-      console.log('Aqui')
       if(response) editMode.value = true
     }
   } catch(error) {
