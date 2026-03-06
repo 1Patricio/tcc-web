@@ -4,4 +4,5 @@ export interface Arquivo {
   id: string,
   nome: string,
   pasta?: Pasta,
+  createdAt: string
 }

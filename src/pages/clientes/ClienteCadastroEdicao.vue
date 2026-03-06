@@ -168,7 +168,6 @@ async function handleSubmit() {
   }
 
   if (editMode.value) {
-    console.log('Aqui 2')
     updateCliente()
   } else {
     createCliente()

@@ -2,8 +2,8 @@
   <div class="q-pq-md">
     <div class="flex justify-between items-center q-mb-sm" style="height: 80px;">
       <div class="flex column">
-        <h4 class="text-terciary text-bold q-my-sm">Documentos</h4>
-        <p class="text-terciary q-my-none">Gerencia os documentos dos seus clientes</p>
+        <h4 class="text-terciary text-bold q-my-sm">Arquivos</h4>
+        <p class="text-terciary q-my-none">Gerencie os arquivos do cliente <span class="text-primary text-bold">{{ cliente?.nome }}</span></p>
       </div>
     </div>
   </div>
@@ -18,11 +18,10 @@
         v-model:pagination="tablePagination"
         flat
         bordered
-        :rows="pastas"
+        :rows="documentos"
         :columns="columns"
         row-key="id"
-        :hide-bottom="pastas.length > 0"
-        @row-click="(_, row) => onNavegarPasta(row)"
+        :hide-bottom="documentos.length > 0"
       >
         <template #header="props">
           <q-tr :props="props">
@@ -42,8 +41,8 @@
             <div class="row items-center">
 
               <q-icon
-                :name="'folder'"
-                :color="'secondary'"
+                :name="'description'"
+                :color="'blue-8'"
                 class="q-mr-sm"
                 size="22px"
               />
@@ -61,39 +60,67 @@
 </template>
 
 <script setup lang="ts">
-import { usePastaService } from '@/services/api/pasta.service'
-import type { Pasta } from '@/types/pastas/Pasta'
+import { useClienteService } from '@/services'
+import { useArquivoService } from '@/services/api/arquivo.service'
+import type { Arquivo } from '@/types/arquivos/Arquivo'
+import type { Cliente } from '@/types/clientes/Cliente'
 import type { QTableColumn } from 'quasar'
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 
-const pastaService = usePastaService()
-const router = useRouter()
+const clienteService = useClienteService()
+const arquivosService = useArquivoService()
+const route = useRoute()
 
 const isLoading = ref(false)
 const hasMore = ref(true)
 const tablePagination = ref({ rowsPerPage: 0 })
-const pastas = ref<Pasta[]>([])
+const arquivos = ref<Arquivo[]>([])
+const cliente = ref<Cliente>()
+
 
 onMounted(async () => {
-   load()
-   const response = await pastaService.getAll()
-   pastas.value = response
+  load()
+   const idRota = route.params.id as string
+
+   const response = await arquivosService.getAllByPasta(idRota)
+   cliente.value = await clienteService.getById(idRota)
 })
+
+const documentos = ref<Arquivo[]>([
+  {
+    id: '1',
+    nome: 'Documento Fictício 1',
+    createdAt: isoToBr(new Date().toISOString().split('T')[0])
+  },
+  {
+    id: '2',
+    nome: 'Documento Fictício 2',
+    createdAt: isoToBr(new Date().toISOString().split('T')[0])
+  }
+])
+
+function isoToBr(date: string | undefined) {
+  if (!date) return ''
+  const [year, month, day] = date.split('-')
+  return `${day}/${month}/${year}`
+}
+
+console.log(documentos.value)
 
 const columns: QTableColumn[] = [
   {
     name: 'nome',
     field: 'nome',
-    label: 'Clientes',
+    label: 'Nome',
     align: 'left',
     sortable: true,
   },
   {
-    name: 'dataUltimaModificacao',
-    field: 'dataUltimaModificacao',
-    label: 'Data Última Modificação',
-    align: 'center',
+    name: 'createdAt',
+    field: 'createdAt',
+    label: 'Modificação',
+    align: 'left',
   },
 ]
 
@@ -101,12 +128,6 @@ const columns: QTableColumn[] = [
 async function load() {
   isLoading.value = true
   try {
-    // const response = await clienteService.getAll({ page: 1, rpp })
-    // clientes.value = response.list
-    // hasMore.value = response.list.length === rpp
-
-    // const response = await clienteService.getAll()
-    // clientes.value = response
     hasMore.value = false 
   } catch (error) {
     console.error(error)
@@ -122,25 +143,10 @@ async function loadMore(index: number, done: (stop?: boolean) => void) {
   }
 
   try {
-    //page.value++
-    // const response = await clienteService.getAll({ page: page.value, rpp })
-    // clientes.value.push(...response.list)
-    // const stop = response.list.length < rpp
-    // done(stop)
-
     done(true)
   } catch (error) {
     console.error(error)
     done(true)
   }
-}
-
-async function onNavegarPasta(pasta: any) {
-  if(!pasta) return
-  
-  router.push({
-    name: 'arquivos', 
-    params: {id: pasta.id}
-  })
 }
 </script>
