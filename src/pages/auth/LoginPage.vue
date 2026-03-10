@@ -171,7 +171,7 @@ async function loginUser() {
     }
   } catch (error: any) {
     if (error.response) {
-      notification.error('Não foi possível realizar o login. Erro:' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
+      notification.error('Não foi possível realizar o login. Erro: ' + (error.response?.data?.error || error.response?.data?.detail || error.code || error.message || ''), 9000)
       console.error('ERRO', error.data)
     }
   }
