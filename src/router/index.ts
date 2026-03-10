@@ -1,3 +1,4 @@
+import { useAuth } from '@/composables/useAuth'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -59,12 +60,6 @@ const router = createRouter({
           meta: { requiresAuth: true },
         },
         {
-          path: 'clientes',
-          name: 'clientes',
-          component: () => import('@/pages/clientes/ClientesPage.vue'),
-          meta: { requiresAuth: true },
-        },
-        {
           path: 'clientes/:id',
           name: 'cliente-view',
           component: () => import('@/pages/clientes/ClienteCadastroEdicao.vue'),
@@ -102,9 +97,21 @@ router.beforeEach((to, from) => {
   const hasToken = Boolean(token && token !== 'null' && token !== 'undefined')
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
 
-  if (requiresAuth && !hasToken) {
+  if (to.name === 'login' && requiresAuth) {
+    return true
+  }
+
+  const auth = useAuth()
+  const isTokenExpired = auth.isTokenExpire()
+
+  if (requiresAuth && (!hasToken || isTokenExpired)) {
+    if (isTokenExpired) {
+      localStorage.removeItem('token')
+    }
     return { name: 'login' }
-  } else if (!requiresAuth && hasToken && to.name === 'login') {
+  }
+
+  if (!requiresAuth && hasToken && !isTokenExpired && to.name === 'login') {
     return { name: 'home' }
   }
 
