@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pq-md">
+  <div class="q-pa-md">
     <div class="flex justify-between items-center q-mb-sm" style="height: 80px;">
       <div class="flex column">
         <h4 class="text-terciary text-bold q-my-sm">Documentos</h4>

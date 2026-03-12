@@ -45,9 +45,9 @@
           </q-tr>
         </template>
 
-        <template #body-cell-nome="props">
+        <template #body-cell-tipoAcaoProcesso="props">
           <q-td :props="props">
-            <span class="text-weight-medium text-grey-9">{{ props.row.nome }}</span>
+            <span class="text-weight-medium text-grey-9">{{ formatTipoProcesso(props.row.tipoAcaoProcesso) }}</span>
           </q-td>
         </template>
 
@@ -168,5 +168,30 @@ function onEditarProcesso(processo: Processo | null) {
     name: 'processo-view',
     params: {id: processo.id}
   })
+}
+
+function formatTipoProcesso(nome: string) {
+  switch (nome) {
+    case "CIVEL":
+      return "Cível"
+    
+    case "TRABALHISTA":
+      return "Trabalhista"
+    
+    case "CRIMINAL":
+      return "Criminal"
+    
+    case "TRIBUTARIO":
+      return "Tributário"
+    
+    case "FAMILIA":
+      return "Família"
+    
+    case "CONSUMIDOR":
+      return "Consumidor"
+    
+    case "OUTROS":
+      return "Outros"
+  }
 }
 </script>
