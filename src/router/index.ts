@@ -83,6 +83,24 @@ const router = createRouter({
           component: () => import('@/pages/arquivos/ArquivosPage.vue'),
           meta: { requiresAuth: true },
         },
+        {
+          path: 'peticoes',
+          name: 'peticoes',
+          component: () => import('@/pages/peticoes/PeticoesPage.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'peticoes/novo',
+          name: 'peticoes-form',
+          component: () => import('@/pages/peticoes/PeticaoCadastroEdicao.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'peticoes/:id',
+          name: 'peticao-view',
+          component: () => import('@/pages/peticoes/PeticaoCadastroEdicao.vue'),
+          meta: { requiresAuth: true },
+        }
       ],
     },
     {

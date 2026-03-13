@@ -91,6 +91,16 @@
                 Documentos
               </q-item-section>
             </q-item>
+
+            <q-item clickable v-ripple :to="{name: 'peticoes'}" class="q-mt-sm">
+              <q-item-section avatar>
+                <q-icon name="task" color="white" />
+              </q-item-section>
+
+              <q-item-section class="text-white text-bold">
+                Modelos de Petição
+              </q-item-section>
+            </q-item>
           </q-list>
         </q-scroll-area>
       </q-drawer>
