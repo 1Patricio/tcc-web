@@ -119,7 +119,7 @@ const columns: QTableColumn[] = [
   },
 ]
 
-async function load() {
+async function loadClientes() {
   isLoading.value = true
   try {
     // const response = await clienteService.getAll({ page: 1, rpp })
@@ -157,7 +157,7 @@ async function loadMore(index: number, done: (stop?: boolean) => void) {
 }
 
 onMounted(() => {
-  load()
+  loadClientes()
 })
 
 function onEditarCliente(cliente: Cliente | null) {
