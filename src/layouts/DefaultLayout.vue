@@ -101,6 +101,16 @@
                 Modelos de Petição
               </q-item-section>
             </q-item>
+
+            <q-item clickable v-ripple :to="{name: 'jurisprudencia-rs'}" class="q-mt-sm">
+              <q-item-section avatar>
+                <q-icon name="menu_book" color="white" />
+              </q-item-section>
+
+              <q-item-section class="text-white text-bold">
+                Jurisprudência TJRS
+              </q-item-section>
+            </q-item>
           </q-list>
         </q-scroll-area>
       </q-drawer>
