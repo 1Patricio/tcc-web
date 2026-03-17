@@ -140,7 +140,7 @@ async function createUser() {
     router.push({ name: 'login' })
   } catch (error: any) {
     if (error.response) {
-      notification.error('Não foi possível realizar o cadastro. Erro:' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
+      notification.error('Não foi possível realizar o cadastro. Erro: ' + (error.response?.data?.error || error.code || error.message || ''), 9000)
       console.error('ERRO', error.data)
     }
   }
