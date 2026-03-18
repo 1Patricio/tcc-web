@@ -6,7 +6,7 @@
 
     <q-input 
       v-model="model" 
-      class="full-width" 
+      class="full-width custom-input" 
       :type="type" 
       :outlined="outlined" 
       :dense="dense" 
@@ -50,3 +50,10 @@ const model = computed({
   set: (val: string) => emit('update:modelValue', val)
 })
 </script>
+
+<style>
+.custom-input .q-field__control {
+  background-color: white;
+  border-radius: inherit;
+}
+</style>

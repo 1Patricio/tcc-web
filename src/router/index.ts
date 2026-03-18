@@ -100,6 +100,12 @@ const router = createRouter({
           name: 'peticao-view',
           component: () => import('@/pages/peticoes/PeticaoCadastroEdicao.vue'),
           meta: { requiresAuth: true },
+        },
+        {
+          path: 'jurisprudencia/rs',
+          name: 'jurisprudencia-rs',
+          component: () => import('@/pages/jurisprudencias/JurisprudenciasPage.vue'),
+          meta: { requiresAuth: true},
         }
       ],
     },
