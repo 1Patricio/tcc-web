@@ -111,6 +111,16 @@
                 Jurisprudência TJRS
               </q-item-section>
             </q-item>
+
+            <q-item clickable v-ripple :to="{name: 'timeline'}" class="q-mt-sm">
+              <q-item-section avatar>
+                <q-icon name="timeline" color="white" />
+              </q-item-section>
+
+              <q-item-section class="text-white text-bold">
+                Timeline
+              </q-item-section>
+            </q-item>
           </q-list>
         </q-scroll-area>
       </q-drawer>
