@@ -1,7 +1,5 @@
 import { useApi } from "@/composables/useApi"
 import { createBaseService } from "./base.service"
-import axios from 'axios'
-import * as cheerio from 'cheerio'
 
 export function useJurisprudenciaService(resource?: any) {
   const api = useApi()
