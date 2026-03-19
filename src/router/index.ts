@@ -106,6 +106,12 @@ const router = createRouter({
           name: 'jurisprudencia-rs',
           component: () => import('@/pages/jurisprudencias/JurisprudenciasPage.vue'),
           meta: { requiresAuth: true},
+        },
+        {
+          path: 'timelines',
+          name: 'timelines',
+          component: () => import('@/pages/timelines/TimelinesPage.vue'),
+          meta: { requiresAuth: true},
         }
       ],
     },
