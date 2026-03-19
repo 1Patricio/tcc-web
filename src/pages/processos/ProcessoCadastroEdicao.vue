@@ -90,6 +90,14 @@
             />
           </div>
 
+          <q-input 
+            v-model="formData.descricao" 
+            label="Descreva o caso ou situação jurídica" 
+            type="textarea" 
+            rows="4"
+            outlined dense
+            class="q-mb-md col" 
+          />
         </div>
 
         <div class="row justify-end q-mt-lg">
@@ -111,12 +119,13 @@
         </div>
       </q-form>
     </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import type { QForm } from 'quasar'
 import { useNotification } from '@/composables/useNotification'
 import InputDateComponent from '@/components/InputDateComponent.vue'
@@ -127,10 +136,12 @@ import type { Cliente } from '@/types/clientes/Cliente'
 import { useClienteService, useProcessoService } from '@/services'
 
 const route = useRoute()
+const router = useRouter()
 const processoService = useProcessoService()
 const clienteService = useClienteService()
 const notification = useNotification()
 
+const loading = ref(false)
 const editMode = ref(false)
 const idProcesso = ref<string>()
 const clientes = ref<Cliente[]>([])
@@ -145,7 +156,8 @@ const formData = ref({
   vara: '',
   comarca: '',
   dataDistribuicao: null as string | null,
-  valorCausa: null as number | null
+  valorCausa: null as number | null,
+  descricao: null as string | null
 })
 
 const status = [
@@ -218,38 +230,37 @@ async function handleSubmit() {
 }
 
 async function createProcesso() {
-  try{
+  try {
     await processoService.create({
       ...formData.value,
       valorCausa: Number(formData.value.valorCausa),
       dataDistribuicao: formData.value.dataDistribuicao ? brToIso(formData.value.dataDistribuicao) : null
     })
+    notification.success('Processo cadastrado com sucesso!')
+    router.push({ name: 'processos' })
   } catch (error: any) {
     if (error.response) {
-      notification.error('Não foi possível realizar o cadastro. Erro:' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
+      notification.error('Não foi possível realizar o cadastro. Erro: ' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
       console.error('ERRO', error.data)
     }
   }
-
-  notification.success('Processo cadastrado com sucesso!')
 }
 
 async function updateProcesso() {
   if (!idProcesso.value) return
-  
+
   try {
     await processoService.update(idProcesso.value, {
       ...formData.value,
       valorCausa: Number(formData.value.valorCausa),
       dataDistribuicao: formData.value.dataDistribuicao ? brToIso(formData.value.dataDistribuicao) : ''
-    }) 
+    })
+    notification.success('Processo atualizado com sucesso!')
   } catch (error: any) {
     if (error.response) {
-      notification.error('Não foi possível realizar o cadastro. Erro:' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
+      notification.error('Não foi possível realizar a atualização. Erro: ' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
       console.error('ERRO', error.data)
     }
   }
-
-  notification.success('Processo atualizado com sucesso!')
 }
 </script>
