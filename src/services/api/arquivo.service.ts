@@ -15,8 +15,23 @@ export function useArquivoService(resource?: any) {
     }
   }
 
+  async function upload(pastaId: string, file: File) {
+    const formData = new FormData()
+    formData.append('pastaId', pastaId)
+    formData.append('file', file)
+
+    const response = await api.post('/arquivos', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
+  }
+
+
   return {
     ...baseService,
-    getAllByPasta
+    getAllByPasta,
+    upload
   }
 }

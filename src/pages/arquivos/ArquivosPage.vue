@@ -3,7 +3,29 @@
     <div class="flex justify-between items-center q-mb-sm" style="height: 80px;">
       <div class="flex column">
         <h4 class="text-terciary text-bold q-my-sm">Arquivos</h4>
-        <p class="text-terciary q-my-none">Gerencie os arquivos do cliente <span class="text-primary text-bold">{{ cliente?.nome }}</span></p>
+        <p class="text-terciary q-my-none">
+          Gerencie os arquivos do cliente
+          <span class="text-primary text-bold">{{ cliente?.nome }}</span>
+        </p>
+      </div>
+
+      <div>
+        <q-btn
+          icon="cloud_upload"
+          label="Upload Arquivo"
+          color="primary"
+          no-caps
+          class="q-mt-lg"
+          :loading="isLoading"
+          @click="triggerFilePicker"
+        />
+
+        <q-file
+          ref="fileRef"
+          v-model="file"
+          style="display: none"
+          @update:model-value="onFileSelected"
+        />
       </div>
     </div>
   </div>
@@ -41,8 +63,8 @@
             <div class="row items-center">
 
               <q-icon
-                :name="'description'"
-                :color="'blue-8'"
+                name="description"
+                color="blue-8"
                 class="q-mr-sm"
                 size="22px"
               />
@@ -62,51 +84,56 @@
 <script setup lang="ts">
 import { useClienteService } from '@/services'
 import { useArquivoService } from '@/services/api/arquivo.service'
+import { usePastaService } from '@/services/api/pasta.service'
 import type { Arquivo } from '@/types/arquivos/Arquivo'
 import type { Cliente } from '@/types/clientes/Cliente'
-import type { QTableColumn } from 'quasar'
+import { QFile, type QTableColumn } from 'quasar'
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 const clienteService = useClienteService()
 const arquivosService = useArquivoService()
+const pastaService = usePastaService()
 const route = useRoute()
 
+const idRota = ref('')
 const isLoading = ref(false)
 const hasMore = ref(true)
 const tablePagination = ref({ rowsPerPage: 0 })
-const arquivos = ref<Arquivo[]>([])
-const cliente = ref<Cliente>()
 
+const cliente = ref<Cliente | null>(null)
+const documentos = ref<Arquivo[]>([])
+
+const file = ref<File | null>(null)
+const fileRef = ref<InstanceType<typeof QFile> | null>(null)
+
+const triggerFilePicker = () => {
+  fileRef.value?.pickFiles()
+}
 
 onMounted(async () => {
-  load()
-   const idRota = route.params.id as string
+  idRota.value = route.params.id as string
 
-   const response = await arquivosService.getAllByPasta(idRota)
-   cliente.value = await clienteService.getById(idRota)
-})
+  try {
+    isLoading.value = true
 
-const documentos = ref<Arquivo[]>([
-  {
-    id: '1',
-    nome: 'Documento Fictício 1',
-    createdAt: isoToBr(new Date().toISOString().split('T')[0])
-  },
-  {
-    id: '2',
-    nome: 'Documento Fictício 2',
-    createdAt: isoToBr(new Date().toISOString().split('T')[0])
+    const response = await arquivosService.getAllByPasta(idRota.value)
+    documentos.value = response
+
+    cliente.value = await clienteService.getById(idRota.value)
+
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isLoading.value = false
   }
-])
+})
 
 function isoToBr(date: string | undefined) {
   if (!date) return ''
   const [year, month, day] = date.split('-')
   return `${day}/${month}/${year}`
 }
-
-console.log(documentos.value)
 
 const columns: QTableColumn[] = [
   {
@@ -124,15 +151,53 @@ const columns: QTableColumn[] = [
   },
 ]
 
+function isValidFile(file: File) {
+  const allowed = [
+    'application/pdf',
+    'image/png',
+    'image/jpeg',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  ]
 
-async function load() {
-  isLoading.value = true
+  if (!allowed.includes(file.type)) {
+    alert('Tipo de arquivo não permitido')
+    return false
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Arquivo muito grande (máx 5MB)')
+    return false
+  }
+
+  return true
+}
+
+async function onFileSelected(selectedFile: File | null) {
+  if (!selectedFile || !isValidFile(selectedFile)) {
+    file.value = null
+    return
+  }
+
   try {
-    hasMore.value = false 
+    isLoading.value = true
+
+    const result = await arquivosService.upload(idRota.value, selectedFile)
+
+    console.log('Upload realizado:', result)
+
+    // Atualiza lista (otimista)
+    documentos.value.unshift({
+      id: crypto.randomUUID(),
+      nome: selectedFile.name,
+      createdAt: isoToBr(new Date().toISOString().split('T')[0])
+    } as Arquivo)
+
   } catch (error) {
-    console.error(error)
+    console.error('Erro no upload:', error)
   } finally {
     isLoading.value = false
+    file.value = null
   }
 }
 

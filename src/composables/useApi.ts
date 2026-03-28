@@ -21,6 +21,10 @@ export function useApi(baseUrl?: string) {
         config.headers.Authorization = `Bearer ${token}`
       }
 
+      if (config.data instanceof FormData) {
+        delete config.headers['Content-Type']
+      }
+
       return config
     },
     (error) => Promise.reject(error)
@@ -29,10 +33,7 @@ export function useApi(baseUrl?: string) {
   apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
-      console.error(
-        'Erro na requisição:',
-        error.response?.data || error.message
-      )
+      console.error('Erro na requisição:', error.response?.data || error.message)
       return Promise.reject(error)
     }
   )
