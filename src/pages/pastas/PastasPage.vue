@@ -76,9 +76,9 @@ const tablePagination = ref({ rowsPerPage: 0 })
 const pastas = ref<Pasta[]>([])
 
 onMounted(async () => {
-   load()
-   const response = await pastaService.getAll()
-   pastas.value = response
+  load()
+  const response = await pastaService.getAll()
+  pastas.value = response
 })
 
 const columns: QTableColumn[] = [
@@ -135,12 +135,8 @@ async function loadMore(index: number, done: (stop?: boolean) => void) {
   }
 }
 
-async function onNavegarPasta(pasta: any) {
-  if(!pasta) return
-  
-  router.push({
-    name: 'arquivos', 
-    params: {id: pasta.id}
-  })
+function onNavegarPasta(pasta: Pasta) {
+  if (!pasta) return
+  router.push({ name: 'arquivos', params: { id: pasta.id } })
 }
 </script>

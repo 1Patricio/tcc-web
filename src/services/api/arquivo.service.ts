@@ -15,6 +15,13 @@ export function useArquivoService(resource?: any) {
     }
   }
 
+  async function download(arquivoId: string): Promise<ArrayBuffer> {
+    const response = await api.get(`/arquivos/${arquivoId}/download`, {
+      responseType: 'arraybuffer'
+    })
+    return response.data
+  }
+
   async function upload(pastaId: string, file: File) {
     const formData = new FormData()
     formData.append('pastaId', pastaId)
@@ -32,6 +39,7 @@ export function useArquivoService(resource?: any) {
   return {
     ...baseService,
     getAllByPasta,
+    download,
     upload
   }
 }

@@ -31,9 +31,9 @@
   </div>
 
   <div class="q-pa-md">
-    <q-infinite-scroll 
+    <q-infinite-scroll
       v-if="!isLoading"
-      @load="loadMore" 
+      @load="loadMore"
       :offset="250"
     >
       <q-table
@@ -44,6 +44,8 @@
         :columns="columns"
         row-key="id"
         :hide-bottom="documentos.length > 0"
+        @row-click="(_evt, row) => openArquivo(row)"
+        style="cursor: pointer"
       >
         <template #header="props">
           <q-tr :props="props">
@@ -61,40 +63,45 @@
         <template #body-cell-nome="props">
           <q-td :props="props">
             <div class="row items-center">
-
               <q-icon
                 name="description"
                 color="blue-8"
                 class="q-mr-sm"
                 size="22px"
               />
-
               <span class="text-weight-medium">
                 {{ props.row.nome }}
               </span>
-
             </div>
           </q-td>
         </template>
       </q-table>
     </q-infinite-scroll>
   </div>
+
+  <PdfViewerDialog
+    v-model="pdfDialog"
+    :arquivo="selectedArquivo"
+    :pdf-data="pdfData"
+    :loading="pdfLoading"
+  />
 </template>
 
 <script setup lang="ts">
+import PdfViewerDialog from '@/components/documentos/PdfViewerDialog.vue'
 import { useClienteService } from '@/services'
 import { useArquivoService } from '@/services/api/arquivo.service'
-import { usePastaService } from '@/services/api/pasta.service'
 import type { Arquivo } from '@/types/arquivos/Arquivo'
 import type { Cliente } from '@/types/clientes/Cliente'
 import { QFile, type QTableColumn } from 'quasar'
 import { onMounted, ref } from 'vue'
+import { useNotification } from '@/composables/useNotification'
 import { useRoute } from 'vue-router'
 
 const clienteService = useClienteService()
 const arquivosService = useArquivoService()
-const pastaService = usePastaService()
 const route = useRoute()
+const { warning } = useNotification()
 
 const idRota = ref('')
 const isLoading = ref(false)
@@ -106,6 +113,11 @@ const documentos = ref<Arquivo[]>([])
 
 const file = ref<File | null>(null)
 const fileRef = ref<InstanceType<typeof QFile> | null>(null)
+
+const pdfDialog = ref(false)
+const pdfLoading = ref(false)
+const pdfData = ref<ArrayBuffer | null>(null)
+const selectedArquivo = ref<Arquivo | null>(null)
 
 const triggerFilePicker = () => {
   fileRef.value?.pickFiles()
@@ -161,12 +173,12 @@ function isValidFile(file: File) {
   ]
 
   if (!allowed.includes(file.type)) {
-    alert('Tipo de arquivo não permitido')
+    warning('Tipo de arquivo não permitido. Use PDF, imagem, Word ou Excel.')
     return false
   }
 
-  if (file.size > 5 * 1024 * 1024) {
-    alert('Arquivo muito grande (máx 5MB)')
+  if (file.size > 50 * 1024 * 1024) {
+    warning('Arquivo muito grande. O limite é 50MB.')
     return false
   }
 
@@ -186,10 +198,10 @@ async function onFileSelected(selectedFile: File | null) {
 
     console.log('Upload realizado:', result)
 
-    // Atualiza lista (otimista)
     documentos.value.unshift({
       id: crypto.randomUUID(),
       nome: selectedFile.name,
+      url: result?.url ?? '',
       createdAt: isoToBr(new Date().toISOString().split('T')[0])
     } as Arquivo)
 
@@ -212,6 +224,27 @@ async function loadMore(index: number, done: (stop?: boolean) => void) {
   } catch (error) {
     console.error(error)
     done(true)
+  }
+}
+
+async function openArquivo(arquivo: Arquivo) {
+  const isPdf = arquivo.nome.toLowerCase().endsWith('.pdf')
+  if (!isPdf) {
+    window.open(arquivo.url, '_blank')
+    return
+  }
+
+  selectedArquivo.value = arquivo
+  pdfData.value = null
+  pdfDialog.value = true
+  pdfLoading.value = true
+
+  try {
+    pdfData.value = await arquivosService.download(arquivo.id)
+  } catch (error) {
+    console.error('Erro ao carregar PDF:', error)
+  } finally {
+    pdfLoading.value = false
   }
 }
 </script>
