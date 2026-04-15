@@ -44,6 +44,17 @@
           </div>
 
           <div class="col-6">
+            <SelectComponent
+              v-model="formData.status"
+              label="Status*"
+              :options="status"
+              option-value="value"
+              option-label="title"
+              :rules="[val => requiredField(val, 'Status')]"
+            />
+          </div>
+
+          <div class="col-6">
             <InputTextComponent
               v-model="formData.comarca"
               label="Comarca"
@@ -52,7 +63,7 @@
             />
           </div>
 
-          <div class="col-12">
+          <div class="col-6">
             <InputTextComponent
               v-model="formData.vara"
               label="Vara"
@@ -88,24 +99,13 @@
             />
           </div>
 
-          <div class="col-4">
-            <SelectComponent
-              v-model="formData.status"
-              label="Status*"
-              :options="status"
-              option-value="value"
-              option-label="title"
-              :rules="[val => requiredField(val, 'Status')]"
-            />
-          </div>
-
-          <q-input 
-            v-model="formData.descricao" 
-            label="Descreva o caso ou situação jurídica" 
-            type="textarea" 
+          <q-input
+            v-model="formData.descricao"
+            label="Descreva o caso ou situação jurídica"
+            type="textarea"
             rows="4"
             outlined dense
-            class="q-mb-md col" 
+            class="q-mb-md col"
           />
         </div>
 
