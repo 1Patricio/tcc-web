@@ -1,4 +1,5 @@
 import type { StatusProcessoEnum } from "./StatusProcessoEnum";
+import type { InstanciaProcessoEnum } from "./InstanciaProcessoEnum";
 
 export interface Processo {
   id: string,
@@ -6,6 +7,8 @@ export interface Processo {
   clienteId?: string,
   tipoAcaoProcesso?: string,
   status: StatusProcessoEnum,
+  instancia?: InstanciaProcessoEnum,
+  parteContraria?: string,
   vara?: boolean,
   comarca?: string,
   dataDistribuicao?: Date,

@@ -34,6 +34,15 @@
           </div>
 
           <div class="col-6">
+            <InputTextComponent
+              v-model="formData.parteContraria"
+              label="Parte Contrária"
+              dense
+              outlined
+            />
+          </div>
+
+          <div class="col-6">
             <SelectComponent
               v-model="formData.tipoAcaoProcesso"
               label="Tipo de Ação"
@@ -51,6 +60,16 @@
               option-value="value"
               option-label="title"
               :rules="[val => requiredField(val, 'Status')]"
+            />
+          </div>
+
+          <div class="col-6">
+            <SelectComponent
+              v-model="formData.instancia"
+              label="Instância"
+              :options="instancias"
+              option-value="value"
+              option-label="title"
             />
           </div>
 
@@ -160,7 +179,9 @@ const formData = ref({
   id: '',
   numeroProcesso: '',
   clienteId: '',
+  parteContraria: '',
   tipoAcaoProcesso: null as string | null,
+  instancia: null as string | null,
   status: null as string | null,
   vara: '',
   comarca: '',
@@ -176,6 +197,14 @@ const status = [
   { title: 'Sentença', value: 'SENTENCA' },
   { title: 'Recurso', value: 'RECURSO' },
   { title: 'Arquivado', value: 'ARQUIVADO' }
+]
+
+const instancias = [
+  { title: '1ª Instância', value: 'PRIMEIRA' },
+  { title: '2ª Instância', value: 'SEGUNDA' },
+  { title: 'STJ', value: 'STJ' },
+  { title: 'STF', value: 'STF' },
+  { title: 'TST', value: 'TST' },
 ]
 
 const tipoAcao = [
