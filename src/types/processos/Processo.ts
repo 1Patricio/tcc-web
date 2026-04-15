@@ -9,6 +9,7 @@ export interface Processo {
   vara?: boolean,
   comarca?: string,
   dataDistribuicao?: Date,
+  dataPrazo?: Date,
   valorCausa?: number,
   descricao?: string,
   observacoes?: string,

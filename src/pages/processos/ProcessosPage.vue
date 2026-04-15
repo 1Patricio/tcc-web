@@ -118,6 +118,13 @@ const columns: QTableColumn[] = [
     label: 'Tipo Ação',
     align: 'left',
   },
+  {
+    name: 'dataPrazo',
+    field: 'dataPrazo',
+    label: 'Prazo',
+    align: 'left',
+    format: (val: string) => val ? val.split('-').reverse().join('/') : '-',
+  },
 ]
 
 async function load() {

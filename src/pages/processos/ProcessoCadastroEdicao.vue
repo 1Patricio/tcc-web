@@ -71,6 +71,15 @@
           </div>
 
           <div class="col-4">
+            <InputDateComponent
+              v-model="formData.dataPrazo"
+              label="Data de Prazo"
+              dense
+              outlined
+            />
+          </div>
+
+          <div class="col-4">
             <InputMoneyComponent
               v-model="formData.valorCausa"
               label="Valor da Causa"
@@ -156,6 +165,7 @@ const formData = ref({
   vara: '',
   comarca: '',
   dataDistribuicao: null as string | null,
+  dataPrazo: null as string | null,
   valorCausa: null as number | null,
   descricao: null as string | null
 })
@@ -205,7 +215,8 @@ onMounted(async () => {
 
     formData.value = {
       ...response,
-      dataDistribuicao: isoToBr(response.dataDistribuicao)
+      dataDistribuicao: isoToBr(response.dataDistribuicao),
+      dataPrazo: isoToBr(response.dataPrazo)
     }
   }
 
@@ -234,7 +245,8 @@ async function createProcesso() {
     await processoService.create({
       ...formData.value,
       valorCausa: Number(formData.value.valorCausa),
-      dataDistribuicao: formData.value.dataDistribuicao ? brToIso(formData.value.dataDistribuicao) : null
+      dataDistribuicao: formData.value.dataDistribuicao ? brToIso(formData.value.dataDistribuicao) : null,
+      dataPrazo: formData.value.dataPrazo ? brToIso(formData.value.dataPrazo) : null
     })
     notification.success('Processo cadastrado com sucesso!')
     router.push({ name: 'processos' })
@@ -253,7 +265,8 @@ async function updateProcesso() {
     await processoService.update(idProcesso.value, {
       ...formData.value,
       valorCausa: Number(formData.value.valorCausa),
-      dataDistribuicao: formData.value.dataDistribuicao ? brToIso(formData.value.dataDistribuicao) : ''
+      dataDistribuicao: formData.value.dataDistribuicao ? brToIso(formData.value.dataDistribuicao) : '',
+      dataPrazo: formData.value.dataPrazo ? brToIso(formData.value.dataPrazo) : ''
     })
     notification.success('Processo atualizado com sucesso!')
   } catch (error: any) {
