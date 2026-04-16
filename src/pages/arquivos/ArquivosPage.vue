@@ -3,10 +3,7 @@
     <div class="flex justify-between items-center q-mb-sm" style="height: 80px;">
       <div class="flex column">
         <div class="row items-center q-gutter-xs q-mb-xs">
-          <span
-            class="text-grey-6 cursor-pointer text-sm"
-            @click="router.push({ name: 'pastas' })"
-          >
+          <span class="text-grey-6 cursor-pointer text-sm" @click="router.push({ name: 'pastas' })">
             Documentos
           </span>
           <template v-for="(crumb, i) in breadcrumbs" :key="crumb.id">
@@ -23,21 +20,8 @@
       </div>
 
       <div>
-        <q-btn
-          icon="cloud_upload"
-          label="Upload Arquivo"
-          color="primary"
-          no-caps
-          :loading="isLoading"
-          @click="triggerFilePicker"
-        />
-
-        <q-file
-          ref="fileRef"
-          v-model="file"
-          style="display: none"
-          @update:model-value="onFileSelected"
-        />
+        <q-btn icon="cloud_upload" label="Upload Arquivo" color="primary" no-caps :loading="isLoading" @click="triggerFilePicker" />
+        <q-file ref="fileRef" v-model="file" style="display: none" @update:model-value="onFileSelected" />
       </div>
     </div>
   </div>
@@ -48,11 +32,7 @@
       <span class="text-grey-8">Carregando...</span>
     </div>
 
-    <q-infinite-scroll
-      v-else
-      @load="loadMore"
-      :offset="250"
-    >
+    <q-infinite-scroll v-else @load="loadMore" :offset="250">
       <q-table
         flat
         bordered
@@ -60,7 +40,6 @@
         :columns="columns"
         row-key="id"
         :hide-bottom="documentos.length > 0"
-        @row-click="(_evt, row) => onRowClick(row)"
         style="cursor: pointer"
       >
         <template #header="props">
@@ -76,18 +55,51 @@
           </q-tr>
         </template>
 
-        <template #body-cell-nome="props">
-          <q-td :props="props">
-            <div class="row items-center">
-              <q-icon
-                :name="props.row._type === 'pasta' ? 'folder' : getFileIcon(props.row.nome).icon"
-                :color="props.row._type === 'pasta' ? 'secondary' : getFileIcon(props.row.nome).color"
-                class="q-mr-sm"
-                size="22px"
-              />
-              <span class="text-weight-medium">{{ props.row.nome }}</span>
-            </div>
-          </q-td>
+        <template #body="props">
+          <q-tr :props="props" @click="onRowClick(props.row)" style="cursor: pointer">
+            <q-td key="nome" :props="props">
+              <div class="row items-center">
+                <q-icon
+                  :name="props.row._type === 'pasta' ? 'folder' : getFileIcon(props.row.nome).icon"
+                  :color="props.row._type === 'pasta' ? 'secondary' : getFileIcon(props.row.nome).color"
+                  class="q-mr-sm"
+                  size="22px"
+                />
+                <span class="text-weight-medium">{{ props.row.nome }}</span>
+              </div>
+            </q-td>
+            <q-td key="createdAt" :props="props">{{ props.row.createdAt }}</q-td>
+
+            <q-menu context-menu touch-position>
+              <q-list style="min-width: 160px">
+                <template v-if="props.row._type === 'pasta'">
+                  <q-item clickable v-close-popup @click="onRowClick(props.row)">
+                    <q-item-section avatar><q-icon name="folder_open" color="secondary" /></q-item-section>
+                    <q-item-section>Abrir</q-item-section>
+                  </q-item>
+                </template>
+
+                <template v-else>
+                  <q-item clickable v-close-popup @click="onRowClick(props.row)">
+                    <q-item-section avatar><q-icon name="visibility" color="primary" /></q-item-section>
+                    <q-item-section>Visualizar</q-item-section>
+                  </q-item>
+
+                  <q-item clickable v-close-popup @click="downloadArquivo(props.row)">
+                    <q-item-section avatar><q-icon name="download" color="green-7" /></q-item-section>
+                    <q-item-section>Download</q-item-section>
+                  </q-item>
+
+                  <q-separator />
+
+                  <q-item clickable v-close-popup @click="confirmarExclusao(props.row)">
+                    <q-item-section avatar><q-icon name="delete" color="red-6" /></q-item-section>
+                    <q-item-section class="text-red-6">Excluir</q-item-section>
+                  </q-item>
+                </template>
+              </q-list>
+            </q-menu>
+          </q-tr>
         </template>
 
         <template #no-data>
@@ -112,7 +124,7 @@ import PdfViewerDialog from '@/components/documentos/PdfViewerDialog.vue'
 import { useArquivoService } from '@/services/api/arquivo.service'
 import { usePastaService } from '@/services/api/pasta.service'
 import type { Arquivo } from '@/types/arquivos/Arquivo'
-import { QFile, type QTableColumn } from 'quasar'
+import { useQuasar, QFile, type QTableColumn } from 'quasar'
 import { onMounted, ref, watch } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 import { useRoute, useRouter } from 'vue-router'
@@ -122,11 +134,10 @@ const arquivosService = useArquivoService()
 const pastaService = usePastaService()
 const route = useRoute()
 const router = useRouter()
-const { warning } = useNotification()
+const { warning, success, error } = useNotification()
+const $q = useQuasar()
 
 const isLoading = ref(false)
-const hasMore = ref(false)
-
 const pasta = ref<any>(null)
 const breadcrumbs = ref<{ id: string, nome: string }[]>([])
 const documentos = ref<any[]>([])
@@ -144,22 +155,17 @@ const triggerFilePicker = () => fileRef.value?.pickFiles()
 async function carregar(id: string) {
   try {
     isLoading.value = true
-
     const [pastaData, arquivos] = await Promise.all([
       pastaService.getById(id),
       arquivosService.getAllByPasta(id),
     ])
-
     pasta.value = pastaData
-
     breadcrumbs.value = buildBreadcrumbs(pastaData)
-
     const subpastas = (pastaData.subpastas ?? []).map((p: any) => ({ ...p, _type: 'pasta' }))
     const files = (arquivos ?? []).map((a: any) => ({ ...a, _type: 'arquivo' }))
     documentos.value = [...subpastas, ...files]
-
-  } catch (error) {
-    console.error(error)
+  } catch (err) {
+    console.error(err)
   } finally {
     isLoading.value = false
   }
@@ -176,10 +182,7 @@ function buildBreadcrumbs(p: any): { id: string, nome: string }[] {
 }
 
 onMounted(() => carregar(route.params.id as string))
-
-watch(() => route.params.id, (id) => {
-  if (id) carregar(id as string)
-})
+watch(() => route.params.id, (id) => { if (id) carregar(id as string) })
 
 function isoToBr(date: string | undefined) {
   if (!date) return ''
@@ -189,33 +192,26 @@ function isoToBr(date: string | undefined) {
 
 const columns: QTableColumn[] = [
   { name: 'nome',      field: 'nome',      label: 'Nome',        align: 'left', sortable: true },
-  { name: 'createdAt', field: 'createdAt', label: 'Modificação',  align: 'left' },
+  { name: 'createdAt', field: 'createdAt', label: 'Modificação', align: 'left' },
 ]
 
-function isValidFile(file: File) {
+function isValidFile(arquivo: File) {
   const allowed = [
     'application/pdf',
-    'image/png',
-    'image/jpeg',
-    'image/gif',
-    'image/webp',
+    'image/png', 'image/jpeg', 'image/gif', 'image/webp',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
-    'text/csv',
-    'text/plain',
+    'text/csv', 'text/plain',
   ]
-
-  if (!allowed.includes(file.type)) {
-    warning('Tipo de arquivo não permitido. Use PDF, imagem, Word ou Excel.')
+  if (!allowed.includes(arquivo.type)) {
+    warning('Tipo de arquivo não permitido. Use PDF, imagem, Word, Excel ou CSV.')
     return false
   }
-
-  if (file.size > 50 * 1024 * 1024) {
+  if (arquivo.size > 50 * 1024 * 1024) {
     warning('Arquivo muito grande. O limite é 50MB.')
     return false
   }
-
   return true
 }
 
@@ -224,13 +220,12 @@ async function onFileSelected(selectedFile: File | null) {
     file.value = null
     return
   }
-
   try {
     isLoading.value = true
-    await arquivosService.upload(route.params.id as string, selectedFile)
-    await carregar(route.params.id as string)
-  } catch (error) {
-    console.error('Erro no upload:', error)
+    const resultado = await arquivosService.upload(route.params.id as string, selectedFile)
+    documentos.value.push({ ...resultado, _type: 'arquivo' })
+  } catch (err) {
+    console.error('Erro no upload:', err)
   } finally {
     isLoading.value = false
     file.value = null
@@ -255,11 +250,10 @@ async function onRowClick(row: any) {
     pdfData.value = null
     pdfDialog.value = true
     pdfLoading.value = true
-
     try {
       pdfData.value = await arquivosService.download(arquivo.id)
-    } catch (error) {
-      console.error('Erro ao carregar PDF:', error)
+    } catch (err) {
+      console.error('Erro ao carregar PDF:', err)
     } finally {
       pdfLoading.value = false
     }
@@ -269,8 +263,38 @@ async function onRowClick(row: any) {
   try {
     const url = await arquivosService.getPresignedUrl(arquivo.id)
     window.open(url, '_blank')
-  } catch (error) {
-    console.error('Erro ao abrir arquivo:', error)
+  } catch (err) {
+    console.error('Erro ao abrir arquivo:', err)
   }
+}
+
+async function downloadArquivo(arquivo: Arquivo) {
+  try {
+    const url = await arquivosService.getPresignedUrl(arquivo.id)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = arquivo.nome
+    a.click()
+  } catch (err) {
+    error('Erro ao fazer download do arquivo.')
+  }
+}
+
+function confirmarExclusao(arquivo: Arquivo) {
+  $q.dialog({
+    title: 'Excluir arquivo',
+    message: `Deseja excluir "${arquivo.nome}"? Esta ação não pode ser desfeita.`,
+    cancel: { label: 'Cancelar', flat: true },
+    ok: { label: 'Excluir', color: 'red' },
+    persistent: true,
+  }).onOk(async () => {
+    try {
+      await arquivosService.remove(arquivo.id)
+      documentos.value = documentos.value.filter(d => d.id !== arquivo.id)
+      success('Arquivo excluído com sucesso.')
+    } catch (err) {
+      error('Erro ao excluir arquivo.')
+    }
+  })
 }
 </script>
