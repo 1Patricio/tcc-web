@@ -13,21 +13,56 @@
         :to="{ name: 'cliente-form' }"
       />
     </div>
+
+    <div class="row q-col-gutter-sm q-mb-md">
+      <div class="col-12 col-md-5">
+        <q-input
+          v-model="filters.term"
+          outlined
+          dense
+          bg-color="white"
+          placeholder="Buscar por nome ou e-mail..."
+          clearable
+          clear-icon="close"
+        >
+          <template #prepend>
+            <q-icon name="search" size="18px" />
+          </template>
+        </q-input>
+      </div>
+
+      <div class="col-6 col-md-3">
+        <q-select
+          v-model="filters.tipoCliente"
+          outlined
+          dense
+          bg-color="white"
+          label="Tipo de Cliente"
+          clearable
+          emit-value
+          map-options
+          :options="tipoClienteOptions"
+        />
+      </div>
+    </div>
   </div>
 
-  <div class="q-pa-md">
+  <div class="q-pa-md q-pt-none">
+    <div v-if="isLoading" class="column items-center q-gutter-y-md q-pa-xl">
+      <q-spinner-hourglass color="primary" size="4em" />
+      <span class="text-grey-8">Carregando clientes...</span>
+    </div>
+
     <q-infinite-scroll
-      v-if="!isLoading"
+      v-else
       :offset="250"
       @load="loadMore"
     >
       <q-table
-        v-model:pagination="tablePagination"
         flat
         bordered
         :rows="clientes"
         :columns="columns"
-        :loading="isLoading"
         row-key="id"
         :hide-bottom="clientes.length > 0"
         @row-click="(_, row) => onEditarCliente(row)"
@@ -57,14 +92,19 @@
           </q-td>
         </template>
 
+        <template #body-cell-tipoCliente="props">
+          <q-td :props="props">
+            <q-badge
+              :color="props.row.tipoCliente === 'PESSOA_JURIDICA' ? 'blue' : 'teal'"
+              :label="props.row.tipoCliente === 'PESSOA_JURIDICA' ? 'Pessoa Jurídica' : 'Pessoa Física'"
+            />
+          </q-td>
+        </template>
+
         <template #no-data>
           <div class="full-width flex flex-center q-pa-md text-grey-6">
             Nenhum cliente encontrado.
           </div>
-        </template>
-
-        <template #bottom>
-          <div class="row full-width" />
         </template>
       </q-table>
 
@@ -74,20 +114,12 @@
         </div>
       </template>
     </q-infinite-scroll>
-
-    <div
-      v-if="isLoading"
-      class="column items-center q-gutter-y-md q-pa-xl"
-    >
-      <q-spinner-hourglass color="primary" size="4em" />
-      <span class="text-grey-8">Carregando clientes...</span>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { type QTableColumn } from 'quasar'
+import { ref, reactive, watch, onMounted } from 'vue'
+import { debounce, type QTableColumn } from 'quasar'
 import { useClienteService } from '@/services'
 import type { Cliente } from '@/types/clientes/Cliente'
 import { useRouter } from 'vue-router'
@@ -97,38 +129,40 @@ const router = useRouter()
 
 const clientes = ref<Cliente[]>([])
 const isLoading = ref(true)
-const tablePagination = ref({ rowsPerPage: 0 })
+const more = ref(false)
+const page = ref(1)
+const rpp = 20
 
-// const page = ref(1)
-// const rpp = 20
-const hasMore = ref(true)
+const filters = reactive({
+  term: '',
+  tipoCliente: null as string | null,
+})
 
-const columns: QTableColumn[] = [
-  {
-    name: 'nome',
-    field: 'nome',
-    label: 'Nome',
-    align: 'left',
-    sortable: true,
-  },
-  {
-    name: 'email',
-    field: 'email',
-    label: 'E-mail',
-    align: 'left',
-  },
+const tipoClienteOptions = [
+  { label: 'Pessoa Física',   value: 'PESSOA_FISICA' },
+  { label: 'Pessoa Jurídica', value: 'PESSOA_JURIDICA' },
 ]
 
-async function loadClientes() {
+const columns: QTableColumn[] = [
+  { name: 'nome',        field: 'nome',        label: 'Nome',           align: 'left', sortable: true },
+  { name: 'email',       field: 'email',       label: 'E-mail',         align: 'left' },
+  { name: 'tipoCliente', field: 'tipoCliente', label: 'Tipo de Cliente', align: 'left' },
+]
+
+function activeFilters() {
+  return {
+    ...(filters.term?.trim() && { term: filters.term.trim() }),
+    ...(filters.tipoCliente && { tipoCliente: filters.tipoCliente }),
+  }
+}
+
+async function load() {
   isLoading.value = true
   try {
-    // const response = await clienteService.getAll({ page: 1, rpp })
-    // clientes.value = response.list
-    // hasMore.value = response.list.length === rpp
-
-    const response = await clienteService.getAll()
-    clientes.value = response
-    hasMore.value = false 
+    const response = await clienteService.getAll({ page: 1, rpp, ...activeFilters() })
+    clientes.value = response.list
+    more.value = response.more
+    page.value = response.page
   } catch (error) {
     console.error(error)
   } finally {
@@ -136,36 +170,34 @@ async function loadClientes() {
   }
 }
 
-async function loadMore(index: number, done: (stop?: boolean) => void) {
-  if (!hasMore.value) {
-    done(true)
-    return
-  }
+function refresh() {
+  page.value = 1
+  load()
+}
+
+async function loadMore(_: number, done: (stop?: boolean) => void) {
+  if (!more.value) return done(true)
 
   try {
-    //page.value++
-    // const response = await clienteService.getAll({ page: page.value, rpp })
-    // clientes.value.push(...response.list)
-    // const stop = response.list.length < rpp
-    // done(stop)
-
-    done(true)
+    page.value += 1
+    const response = await clienteService.getAll({ page: page.value, rpp, ...activeFilters() })
+    clientes.value = clientes.value.concat(response.list)
+    more.value = response.more
+    done()
   } catch (error) {
     console.error(error)
     done(true)
   }
 }
 
+watch(filters, debounce(refresh, 500), { deep: true })
+
 onMounted(() => {
-  loadClientes()
+  load()
 })
 
 function onEditarCliente(cliente: Cliente | null) {
   if (!cliente) return
-
-  router.push({
-    name: 'cliente-view',
-    params: {id: cliente.id}
-  })
+  router.push({ name: 'cliente-view', params: { id: cliente.id } })
 }
 </script>

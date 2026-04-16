@@ -249,8 +249,8 @@ onMounted(async () => {
     }
   }
 
-  const clientesResponse = await clienteService.getAll()
-  clientes.value = clientesResponse
+  const clientesResponse = await clienteService.getAll({ page: 1, rpp: 100 })
+  clientes.value = clientesResponse.list
 })
 
 async function handleSubmit() {

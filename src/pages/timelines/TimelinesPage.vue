@@ -119,8 +119,8 @@ const columns: QTableColumn[] = [
 async function loadClientes() {
   loading.value = true
   try {
-    const response = await clienteService.getAll()
-    clientes.value = response
+    const response = await clienteService.getAll({ page: 1, rpp: 100 })
+    clientes.value = response.list
   } catch (error) {
     console.error(error)
   } finally {

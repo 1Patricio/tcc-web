@@ -1,12 +1,25 @@
 <template>
-  <div class="q-pq-md">
+  <div class="q-pa-md">
     <div class="flex justify-between items-center q-mb-sm" style="height: 80px;">
       <div class="flex column">
-        <h4 class="text-terciary text-bold q-my-sm">Arquivos</h4>
-        <p class="text-terciary q-my-none">
-          Gerencie os arquivos do cliente
-          <span class="text-primary text-bold">{{ cliente?.nome }}</span>
-        </p>
+        <div class="row items-center q-gutter-xs q-mb-xs">
+          <span
+            class="text-grey-6 cursor-pointer text-sm"
+            @click="router.push({ name: 'pastas' })"
+          >
+            Documentos
+          </span>
+          <template v-for="(crumb, i) in breadcrumbs" :key="crumb.id">
+            <q-icon name="chevron_right" size="16px" color="grey-5" />
+            <span
+              :class="i === breadcrumbs.length - 1 ? 'text-primary text-bold text-sm' : 'text-grey-6 cursor-pointer text-sm'"
+              @click="i < breadcrumbs.length - 1 && router.push({ name: 'arquivos', params: { id: crumb.id } })"
+            >
+              {{ crumb.nome }}
+            </span>
+          </template>
+        </div>
+        <h4 class="text-terciary text-bold q-my-none">{{ pasta?.nome ?? 'Arquivos' }}</h4>
       </div>
 
       <div>
@@ -15,7 +28,6 @@
           label="Upload Arquivo"
           color="primary"
           no-caps
-          class="q-mt-lg"
           :loading="isLoading"
           @click="triggerFilePicker"
         />
@@ -31,20 +43,24 @@
   </div>
 
   <div class="q-pa-md">
+    <div v-if="isLoading" class="column items-center q-gutter-y-md q-pa-xl">
+      <q-spinner-hourglass color="primary" size="4em" />
+      <span class="text-grey-8">Carregando...</span>
+    </div>
+
     <q-infinite-scroll
-      v-if="!isLoading"
+      v-else
       @load="loadMore"
       :offset="250"
     >
       <q-table
-        v-model:pagination="tablePagination"
         flat
         bordered
         :rows="documentos"
         :columns="columns"
         row-key="id"
         :hide-bottom="documentos.length > 0"
-        @row-click="(_evt, row) => openArquivo(row)"
+        @row-click="(_evt, row) => onRowClick(row)"
         style="cursor: pointer"
       >
         <template #header="props">
@@ -64,16 +80,20 @@
           <q-td :props="props">
             <div class="row items-center">
               <q-icon
-                name="description"
-                color="blue-8"
+                :name="props.row._type === 'pasta' ? 'folder' : getFileIcon(props.row.nome).icon"
+                :color="props.row._type === 'pasta' ? 'secondary' : getFileIcon(props.row.nome).color"
                 class="q-mr-sm"
                 size="22px"
               />
-              <span class="text-weight-medium">
-                {{ props.row.nome }}
-              </span>
+              <span class="text-weight-medium">{{ props.row.nome }}</span>
             </div>
           </q-td>
+        </template>
+
+        <template #no-data>
+          <div class="full-width flex flex-center q-pa-md text-grey-6">
+            Nenhum arquivo encontrado.
+          </div>
         </template>
       </q-table>
     </q-infinite-scroll>
@@ -89,27 +109,27 @@
 
 <script setup lang="ts">
 import PdfViewerDialog from '@/components/documentos/PdfViewerDialog.vue'
-import { useClienteService } from '@/services'
 import { useArquivoService } from '@/services/api/arquivo.service'
+import { usePastaService } from '@/services/api/pasta.service'
 import type { Arquivo } from '@/types/arquivos/Arquivo'
-import type { Cliente } from '@/types/clientes/Cliente'
 import { QFile, type QTableColumn } from 'quasar'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useNotification } from '@/composables/useNotification'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { getFileIcon } from '@/utils/fileIcon'
 
-const clienteService = useClienteService()
 const arquivosService = useArquivoService()
+const pastaService = usePastaService()
 const route = useRoute()
+const router = useRouter()
 const { warning } = useNotification()
 
-const idRota = ref('')
 const isLoading = ref(false)
-const hasMore = ref(true)
-const tablePagination = ref({ rowsPerPage: 0 })
+const hasMore = ref(false)
 
-const cliente = ref<Cliente | null>(null)
-const documentos = ref<Arquivo[]>([])
+const pasta = ref<any>(null)
+const breadcrumbs = ref<{ id: string, nome: string }[]>([])
+const documentos = ref<any[]>([])
 
 const file = ref<File | null>(null)
 const fileRef = ref<InstanceType<typeof QFile> | null>(null)
@@ -119,26 +139,46 @@ const pdfLoading = ref(false)
 const pdfData = ref<ArrayBuffer | null>(null)
 const selectedArquivo = ref<Arquivo | null>(null)
 
-const triggerFilePicker = () => {
-  fileRef.value?.pickFiles()
-}
+const triggerFilePicker = () => fileRef.value?.pickFiles()
 
-onMounted(async () => {
-  idRota.value = route.params.id as string
-
+async function carregar(id: string) {
   try {
     isLoading.value = true
 
-    const response = await arquivosService.getAllByPasta(idRota.value)
-    documentos.value = response
+    const [pastaData, arquivos] = await Promise.all([
+      pastaService.getById(id),
+      arquivosService.getAllByPasta(id),
+    ])
 
-    cliente.value = await clienteService.getById(idRota.value)
+    pasta.value = pastaData
+
+    breadcrumbs.value = buildBreadcrumbs(pastaData)
+
+    const subpastas = (pastaData.subpastas ?? []).map((p: any) => ({ ...p, _type: 'pasta' }))
+    const files = (arquivos ?? []).map((a: any) => ({ ...a, _type: 'arquivo' }))
+    documentos.value = [...subpastas, ...files]
 
   } catch (error) {
     console.error(error)
   } finally {
     isLoading.value = false
   }
+}
+
+function buildBreadcrumbs(p: any): { id: string, nome: string }[] {
+  const crumbs: { id: string, nome: string }[] = []
+  let current = p
+  while (current) {
+    crumbs.unshift({ id: current.id, nome: current.nome })
+    current = current.parent ?? null
+  }
+  return crumbs
+}
+
+onMounted(() => carregar(route.params.id as string))
+
+watch(() => route.params.id, (id) => {
+  if (id) carregar(id as string)
 })
 
 function isoToBr(date: string | undefined) {
@@ -148,19 +188,8 @@ function isoToBr(date: string | undefined) {
 }
 
 const columns: QTableColumn[] = [
-  {
-    name: 'nome',
-    field: 'nome',
-    label: 'Nome',
-    align: 'left',
-    sortable: true,
-  },
-  {
-    name: 'createdAt',
-    field: 'createdAt',
-    label: 'Modificação',
-    align: 'left',
-  },
+  { name: 'nome',      field: 'nome',      label: 'Nome',        align: 'left', sortable: true },
+  { name: 'createdAt', field: 'createdAt', label: 'Modificação',  align: 'left' },
 ]
 
 function isValidFile(file: File) {
@@ -168,8 +197,13 @@ function isValidFile(file: File) {
     'application/pdf',
     'image/png',
     'image/jpeg',
+    'image/gif',
+    'image/webp',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+    'text/csv',
+    'text/plain',
   ]
 
   if (!allowed.includes(file.type)) {
@@ -193,18 +227,8 @@ async function onFileSelected(selectedFile: File | null) {
 
   try {
     isLoading.value = true
-
-    const result = await arquivosService.upload(idRota.value, selectedFile)
-
-    console.log('Upload realizado:', result)
-
-    documentos.value.unshift({
-      id: crypto.randomUUID(),
-      nome: selectedFile.name,
-      url: result?.url ?? '',
-      createdAt: isoToBr(new Date().toISOString().split('T')[0])
-    } as Arquivo)
-
+    await arquivosService.upload(route.params.id as string, selectedFile)
+    await carregar(route.params.id as string)
   } catch (error) {
     console.error('Erro no upload:', error)
   } finally {
@@ -213,38 +237,40 @@ async function onFileSelected(selectedFile: File | null) {
   }
 }
 
-async function loadMore(index: number, done: (stop?: boolean) => void) {
-  if (!hasMore.value) {
-    done(true)
-    return
-  }
-
-  try {
-    done(true)
-  } catch (error) {
-    console.error(error)
-    done(true)
-  }
+async function loadMore(_: number, done: (stop?: boolean) => void) {
+  done(true)
 }
 
-async function openArquivo(arquivo: Arquivo) {
-  const isPdf = arquivo.nome.toLowerCase().endsWith('.pdf')
-  if (!isPdf) {
-    window.open(arquivo.url, '_blank')
+async function onRowClick(row: any) {
+  if (row._type === 'pasta') {
+    router.push({ name: 'arquivos', params: { id: row.id } })
     return
   }
 
-  selectedArquivo.value = arquivo
-  pdfData.value = null
-  pdfDialog.value = true
-  pdfLoading.value = true
+  const arquivo = row as Arquivo
+  const isPdf = arquivo.nome.toLowerCase().endsWith('.pdf')
+
+  if (isPdf) {
+    selectedArquivo.value = arquivo
+    pdfData.value = null
+    pdfDialog.value = true
+    pdfLoading.value = true
+
+    try {
+      pdfData.value = await arquivosService.download(arquivo.id)
+    } catch (error) {
+      console.error('Erro ao carregar PDF:', error)
+    } finally {
+      pdfLoading.value = false
+    }
+    return
+  }
 
   try {
-    pdfData.value = await arquivosService.download(arquivo.id)
+    const url = await arquivosService.getPresignedUrl(arquivo.id)
+    window.open(url, '_blank')
   } catch (error) {
-    console.error('Erro ao carregar PDF:', error)
-  } finally {
-    pdfLoading.value = false
+    console.error('Erro ao abrir arquivo:', error)
   }
 }
 </script>
