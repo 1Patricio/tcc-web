@@ -169,7 +169,6 @@ const processoService = useProcessoService()
 const clienteService = useClienteService()
 const notification = useNotification()
 
-const loading = ref(false)
 const editMode = ref(false)
 const idProcesso = ref<string>()
 const clientes = ref<Cliente[]>([])

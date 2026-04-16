@@ -91,14 +91,12 @@
 </template>
 
 <script setup lang="ts">
-import { useApi } from '@/composables/useApi';
 import { useNotification } from '@/composables/useNotification';
 import { useAuthService } from '@/services/api/auth.service';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import type { QForm } from 'quasar'
 
-const api = useApi()
 const notification = useNotification()
 const router = useRouter()
 const authService = useAuthService()
