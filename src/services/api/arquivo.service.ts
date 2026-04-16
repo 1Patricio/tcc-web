@@ -15,11 +15,15 @@ export function useArquivoService(resource?: any) {
     }
   }
 
+  async function getPresignedUrl(arquivoId: string): Promise<string> {
+    const response = await api.get(`/arquivos/${arquivoId}/presigned-url`)
+    return response.data.url
+  }
+
   async function download(arquivoId: string): Promise<ArrayBuffer> {
-    const response = await api.get(`/arquivos/${arquivoId}/download`, {
-      responseType: 'arraybuffer'
-    })
-    return response.data
+    const url = await getPresignedUrl(arquivoId)
+    const response = await fetch(url)
+    return response.arrayBuffer()
   }
 
   async function upload(pastaId: string, file: File) {
@@ -39,6 +43,7 @@ export function useArquivoService(resource?: any) {
   return {
     ...baseService,
     getAllByPasta,
+    getPresignedUrl,
     download,
     upload
   }
