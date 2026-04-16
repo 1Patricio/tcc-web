@@ -13,7 +13,7 @@ export default defineConfig({
     }),
     vueDevTools(),
     quasar({
-      sassVariables: 'src/quasar-variables.sass'
+      sassVariables: fileURLToPath(new URL('./src/quasar-variables.sass', import.meta.url))
     }),
   ],
   resolve: {

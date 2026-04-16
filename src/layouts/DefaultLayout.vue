@@ -3,127 +3,57 @@
     <q-header class="bg-primary text-white">
       <q-toolbar style="height: 80px;">
         <q-toolbar-title class="q-ml-lg text-bold">
-          <q-img
-            :src="'/undraw/interm-32.png'"
-            spinner-size="32px"
-            style="height: 32px; max-width: 32px"
-            class="q-mr-sm"
-          />
           INTERM
         </q-toolbar-title>
 
-        <q-btn
-          flat
-          round
-          dense
-          icon="assignment_ind"
-        >
+        <q-btn flat round dense icon="assignment_ind">
           <q-menu>
             <q-list style="min-width: 170px">
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
-                  <q-icon :name="'logout'" />
+                  <q-icon name="logout" />
                 </q-item-section>
-
-                <q-item-section>
-                  Sair
-                </q-item-section>
+                <q-item-section>Sair</q-item-section>
               </q-item>
             </q-list>
           </q-menu>
         </q-btn>
 
         {{ nameUserAuth }}
-
       </q-toolbar>
     </q-header>
 
-      <q-drawer
-        v-model="drawer"
-        show-if-above
-        :mini="miniState"
-        @mouseenter="miniState = false"
-        @mouseleave="miniState = true"
-        :width="310"
-        :mini-width="88"
-        :breakpoint="599"
-        bordered
-        :class="$q.dark.isActive ? 'bg-primary' : 'bg-primary'"
-      >
-        <q-scroll-area class="fit" :horizontal-thumb-style="{ opacity: '0' }">
-          <q-list padding>
-            <q-item clickable v-ripple :to="{name: 'home'}" class="q-mt-sm">
-              <q-item-section avatar>
-                <q-icon name="home" color="white"/>
-              </q-item-section>
+    <q-drawer
+      v-model="drawer"
+      show-if-above
+      :mini="miniState"
+      :width="310"
+      :mini-width="88"
+      :breakpoint="599"
+      bordered
+      class="bg-primary text-white"
+      @mouseenter="onMouseenter"
+      @mouseleave="onMouseleave"
+    >
+      <q-scroll-area class="fit" :horizontal-thumb-style="{ opacity: '0' }">
+        <div class="drawer-wrapper">
 
-              <q-item-section class="text-white text-bold">
-                Home
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple :to="{name: 'processos'}" class="q-mt-sm">
-              <q-item-section avatar>
-                <q-icon name="work" color="white"/>
-              </q-item-section>
-
-              <q-item-section class="text-white text-bold">
-                Processos
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple :to="{name: 'clientes'}" class="q-mt-sm">
-              <q-item-section avatar>
-                <q-icon name="group" color="white"/>
-              </q-item-section>
-
-              <q-item-section class="text-white text-bold">
-                Clientes
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple :to="{name: 'pastas'}" class="q-mt-sm">
-              <q-item-section avatar>
-                <q-icon name="folders" color="white" />
-              </q-item-section>
-
-              <q-item-section class="text-white text-bold">
-                Documentos
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple :to="{name: 'peticoes'}" class="q-mt-sm">
-              <q-item-section avatar>
-                <q-icon name="task" color="white" />
-              </q-item-section>
-
-              <q-item-section class="text-white text-bold">
-                Modelos de Petição
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple :to="{name: 'jurisprudencia-rs'}" class="q-mt-sm">
-              <q-item-section avatar>
-                <q-icon name="menu_book" color="white" />
-              </q-item-section>
-
-              <q-item-section class="text-white text-bold">
-                Jurisprudência TJRS
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-ripple :to="{name: 'timelines'}" class="q-mt-sm">
-              <q-item-section avatar>
-                <q-icon name="timeline" color="white" />
-              </q-item-section>
-
-              <q-item-section class="text-white text-bold">
-                Timeline
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-scroll-area>
-      </q-drawer>
+          <div class="drawer-list">
+            <q-btn
+              v-for="item in menuItems"
+              :key="item.route"
+              :icon="item.icon"
+              :label="miniState ? undefined : item.label"
+              :class="{ 'active': currentRoute.startsWith(item.route) }"
+              class="menu-button"
+              flat
+              no-caps
+              :to="{ name: item.route }"
+            />
+          </div>
+        </div>
+      </q-scroll-area>
+    </q-drawer>
 
     <q-page-container>
       <div class="q-pa-lg q-mx-auto" style="max-width: 1200px;">
@@ -132,32 +62,134 @@
     </q-page-container>
   </q-layout>
 </template>
+
 <script setup lang="ts">
-import { useNotification } from '@/composables/useNotification';
-import { useAuthService } from '@/services/api/auth.service';
-import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router';
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useNotification } from '@/composables/useNotification'
+import { useAuthService } from '@/services/api/auth.service'
+import { onMounted } from 'vue'
 
 const authService = useAuthService()
 const notification = useNotification()
 const router = useRouter()
+const route = useRoute()
 
-const drawer = ref(false);
-const miniState = ref(true);
+const drawer = ref(false)
+const miniState = ref(true)
 const nameUserAuth = ref('Bem Vindo!')
+const hoverTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
+
+const currentRoute = computed(() => route.name as string ?? '')
+
+const menuItems = [
+  { icon: 'home',      label: 'Home',                 route: 'home' },
+  { icon: 'work',      label: 'Processos',             route: 'processos' },
+  { icon: 'group',     label: 'Clientes',              route: 'clientes' },
+  { icon: 'folders',   label: 'Documentos',            route: 'pastas' },
+  { icon: 'task',      label: 'Modelos de Petição',    route: 'peticoes' },
+  { icon: 'menu_book', label: 'Jurisprudência TJRS',   route: 'jurisprudencia-rs' },
+  { icon: 'timeline',  label: 'Timeline',              route: 'timelines' },
+]
+
+function onMouseenter() {
+  hoverTimeout.value = setTimeout(() => {
+    miniState.value = false
+  }, 200)
+}
+
+function onMouseleave() {
+  if (hoverTimeout.value) {
+    clearTimeout(hoverTimeout.value)
+    hoverTimeout.value = null
+  }
+  miniState.value = true
+}
 
 onMounted(async () => {
   const response = await authService.refresh()
   nameUserAuth.value = response.user.nome
 })
 
-function logout(){
+function logout() {
   try {
     authService.logout()
-    router.push({ name: 'login'})
+    router.push({ name: 'login' })
   } catch (error) {
-    notification.error('Erro ao fazer logout: ');
+    notification.error('Erro ao fazer logout')
     console.error(error)
   }
 }
 </script>
+
+<style scoped lang="scss">
+.drawer-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+}
+
+.drawer-divider {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.25);
+  margin: 8px 0 16px;
+}
+
+.drawer-section-label {
+  width: 100%;
+  padding-left: 10px;
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.drawer-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 4px;
+}
+
+.menu-button {
+  width: 100%;
+  height: 56px;
+  color: white;
+  border-radius: 16px;
+  font-weight: 400;
+
+  :deep(.q-btn__content) {
+    justify-content: flex-start;
+    gap: 6px;
+    padding-left: 4px;
+    flex-wrap: nowrap;
+
+    .q-icon {
+      flex-shrink: 0;
+    }
+
+    .block {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+  }
+
+  &.active {
+    font-weight: 600;
+    background-color: var(--q-secondary);
+  }
+
+  &:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+</style>
