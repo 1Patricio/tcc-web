@@ -270,11 +270,15 @@ async function onRowClick(row: any) {
 
 async function downloadArquivo(arquivo: Arquivo) {
   try {
-    const url = await arquivosService.getPresignedUrl(arquivo.id)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = arquivo.nome
-    a.click()
+    const presignedUrl = await arquivosService.getPresignedUrl(arquivo.id)
+    const response = await fetch(presignedUrl)
+    const blob = await response.blob()
+    const objectUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = objectUrl
+    link.download = arquivo.nome
+    link.click()
+    URL.revokeObjectURL(objectUrl)
   } catch (err) {
     error('Erro ao fazer download do arquivo.')
   }
