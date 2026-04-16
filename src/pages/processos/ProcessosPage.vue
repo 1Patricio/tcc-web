@@ -16,18 +16,21 @@
   </div>
 
   <div class="q-pa-md">
+    <div v-if="isLoading" class="column items-center q-gutter-y-md q-pa-xl">
+      <q-spinner-hourglass color="primary" size="4em" />
+      <span class="text-grey-8">Carregando processos...</span>
+    </div>
+
     <q-infinite-scroll
-      v-if="!isLoading"
+      v-else
       :offset="250"
       @load="loadMore"
     >
       <q-table
-        v-model:pagination="tablePagination"
         flat
         bordered
         :rows="processos"
         :columns="columns"
-        :loading="isLoading"
         row-key="id"
         :hide-bottom="processos.length > 0"
         @row-click="(_, row) => onEditarProcesso(row)"
@@ -51,20 +54,10 @@
           </q-td>
         </template>
 
-        <template #body-cell-email="props">
-          <q-td :props="props">
-            <span class="text-grey-7">{{ props.row.email }}</span>
-          </q-td>
-        </template>
-
         <template #no-data>
           <div class="full-width flex flex-center q-pa-md text-grey-6">
-            Nenhum cliente encontrado.
+            Nenhum processo encontrado.
           </div>
-        </template>
-
-        <template #bottom>
-          <div class="row full-width" />
         </template>
       </q-table>
 
@@ -74,14 +67,6 @@
         </div>
       </template>
     </q-infinite-scroll>
-
-    <div
-      v-if="isLoading"
-      class="column items-center q-gutter-y-md q-pa-xl"
-    >
-      <q-spinner-hourglass color="primary" size="4em" />
-      <span class="text-grey-8">Carregando clientes...</span>
-    </div>
   </div>
 </template>
 
@@ -89,7 +74,6 @@
 import { ref, onMounted } from 'vue'
 import { type QTableColumn } from 'quasar'
 import { useProcessoService } from '@/services'
-import type { Cliente } from '@/types/clientes/Cliente'
 import { useRouter } from 'vue-router'
 import type { Processo } from '@/types/processos/Processo'
 
@@ -98,11 +82,9 @@ const router = useRouter()
 
 const processos = ref<Processo[]>([])
 const isLoading = ref(true)
-const tablePagination = ref({ rowsPerPage: 0 })
-
-// const page = ref(1)
-// const rpp = 20
-const hasMore = ref(true)
+const more = ref(false)
+const page = ref(1)
+const rpp = 20
 
 const columns: QTableColumn[] = [
   {
@@ -130,13 +112,10 @@ const columns: QTableColumn[] = [
 async function load() {
   isLoading.value = true
   try {
-    // const response = await clienteService.getAll({ page: 1, rpp })
-    // clientes.value = response.list
-    // hasMore.value = response.list.length === rpp
-
-    const response = await processoService.getAll()
-    processos.value = response
-    hasMore.value = false 
+    const response = await processoService.getAll({ page: 1, rpp })
+    processos.value = response.list
+    more.value = response.more
+    page.value = response.page
   } catch (error) {
     console.error(error)
   } finally {
@@ -144,20 +123,15 @@ async function load() {
   }
 }
 
-async function loadMore(index: number, done: (stop?: boolean) => void) {
-  if (!hasMore.value) {
-    done(true)
-    return
-  }
+async function loadMore(_: number, done: (stop?: boolean) => void) {
+  if (!more.value) return done(true)
 
   try {
-    //page.value++
-    // const response = await clienteService.getAll({ page: page.value, rpp })
-    // clientes.value.push(...response.list)
-    // const stop = response.list.length < rpp
-    // done(stop)
-
-    done(true)
+    page.value += 1
+    const response = await processoService.getAll({ page: page.value, rpp })
+    processos.value = processos.value.concat(response.list)
+    more.value = response.more
+    done()
   } catch (error) {
     console.error(error)
     done(true)
@@ -170,35 +144,18 @@ onMounted(() => {
 
 function onEditarProcesso(processo: Processo | null) {
   if (!processo) return
-
-  router.push({
-    name: 'processo-view',
-    params: {id: processo.id}
-  })
+  router.push({ name: 'processo-view', params: { id: processo.id } })
 }
 
 function formatTipoProcesso(nome: string) {
   switch (nome) {
-    case "CIVEL":
-      return "Cível"
-    
-    case "TRABALHISTA":
-      return "Trabalhista"
-    
-    case "CRIMINAL":
-      return "Criminal"
-    
-    case "TRIBUTARIO":
-      return "Tributário"
-    
-    case "FAMILIA":
-      return "Família"
-    
-    case "CONSUMIDOR":
-      return "Consumidor"
-    
-    case "OUTROS":
-      return "Outros"
+    case "CIVEL": return "Cível"
+    case "TRABALHISTA": return "Trabalhista"
+    case "CRIMINAL": return "Criminal"
+    case "TRIBUTARIO": return "Tributário"
+    case "FAMILIA": return "Família"
+    case "CONSUMIDOR": return "Consumidor"
+    case "OUTROS": return "Outros"
   }
 }
 </script>
