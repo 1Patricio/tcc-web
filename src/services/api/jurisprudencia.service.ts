@@ -15,28 +15,18 @@ export function useJurisprudenciaService(resource?: any) {
     }
   }
 
-  async function getAll() {
+  async function buscaRs(termo: string, tipoConsulta: string = "Inteiro Teor") {
     try {
-      const response = await api.get(`/jurisprudencias`, { data: resource })
+      const response = await api.post("/busca-rs", {
+        termo,
+        tipoConsulta
+      })
+
       return response.data
     } catch (error) {
       throw error
     }
   }
-
-  async function buscaRs(termo: string, conteudoBusca: string) {
-    try {
-      const response = await api.post("/busca-rs", {
-        termo: termo,
-        conteudoBusca: conteudoBusca
-      })
-
-      return response.data.response
-    } catch (error) {
-      throw error
-    }
-  }
-
 
   return {
     ...baseService,
