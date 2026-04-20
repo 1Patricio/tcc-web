@@ -1,45 +1,94 @@
 <template>
   <div class="q-pa-md">
-    <div class="flex justify-between items-center q-mb-sm" style="height: 80px;">
+    <div
+      class="flex justify-between items-center q-mb-sm"
+      style="height: 80px"
+    >
       <div class="flex column">
         <div>
           <h4 class="text-terciary text-bold q-my-sm">
-            {{ editMode ? 'Editar Modelo de Petição' : 'Novo Modelo de Petição' }}
+            {{
+              editMode ? 'Editar Modelo de Petição' : 'Novo Modelo de Petição'
+            }}
           </h4>
-          <p class="text-terciary q-my-none" v-html="editMode
-              ? `Altere o conteúdo do modelo <span class='text-primary text-bold'>${formData?.nome}</span>`
-              : 'Crie um novo modelo de petição para reutilizar'
-            "></p>
+          <p
+            class="text-terciary q-my-none"
+            v-html="
+              editMode
+                ? `Altere o conteúdo do modelo <span class='text-primary text-bold'>${formData?.nome}</span>`
+                : 'Crie um novo modelo de petição para reutilizar'
+            "
+          ></p>
         </div>
       </div>
 
       <div>
-        <q-btn color="green" size="small" :label="editMode ? 'Atualizar' : 'Salvar modelo'" @click="handleSubmit()" />
+        <q-btn
+          color="green"
+          size="small"
+          :label="editMode ? 'Atualizar' : 'Salvar modelo'"
+          @click="handleSubmit()"
+        />
       </div>
     </div>
 
-    <div class="bg-white q-pa-lg" style="border: 0.4px solid gray;">
-      <q-form ref="formRef" @submit.prevent="handleSubmit">
+    <div
+      class="bg-white q-pa-lg"
+      style="border: 0.4px solid gray"
+    >
+      <q-form
+        ref="formRef"
+        @submit.prevent="handleSubmit"
+      >
         <div class="row q-col-gutter-md">
           <div class="col-12 col-md-6">
-            <InputTextComponent v-model="formData.nome" label="Nome do modelo" dense outlined
-              placeholder="Ex: Petição Inicial Trabalhista" :rules="[val => requiredField(val, 'Nome do modelo')]" />
+            <InputTextComponent
+              v-model="formData.nome"
+              label="Nome do modelo"
+              dense
+              outlined
+              placeholder="Ex: Petição Inicial Trabalhista"
+              :rules="[(val) => requiredField(val, 'Nome do modelo')]"
+            />
           </div>
 
           <div class="col-12 col-md-6">
-            <SelectComponent v-model="formData.tipo" label="Tipo" :options="tiposPeticao" option-value="value"
-              option-label="title" :rules="[val => requiredField(val, 'Tipo')]" />
+            <SelectComponent
+              v-model="formData.tipo"
+              label="Tipo"
+              :options="tiposPeticao"
+              option-value="value"
+              option-label="title"
+              :rules="[(val) => requiredField(val, 'Tipo')]"
+            />
           </div>
 
           <div class="col-12">
             <div class="flex justify-between items-center q-mb-md">
-              <label class="text-subtitle2 text-weight-medium q-mb-sm block">Conteúdo da petição</label>
+              <label class="blank text-subtitle2 text-weight-bold block">
+                Conteúdo da petição
+              </label>
               <div>
-                <q-btn label="Copiar Conteúdo" @click="copyText()" color="primary" size="small"
-                  :disable="!formData.conteudo" class="q-mr-sm" />
-                <q-btn label="Gerar modelo" @click="enviar()"
-                  style="background: linear-gradient(45deg, #003366, #7928CA); color: white;" icon="bolt" size="small"
-                  :disable="!formData.tipo" :loading="loading" />
+                <q-btn
+                  label="Copiar Conteúdo"
+                  @click="copyText()"
+                  color="primary"
+                  size="small"
+                  :disable="!formData.conteudo"
+                  class="q-mr-sm"
+                />
+                <q-btn
+                  label="Gerar modelo"
+                  @click="enviar()"
+                  style="
+                    background: linear-gradient(45deg, #003366, #7928ca);
+                    color: white;
+                  "
+                  icon="bolt"
+                  size="small"
+                  :disable="!formData.tipo"
+                  :loading="loading"
+                />
               </div>
             </div>
             <TextEditorComponent v-model="formData.conteudo" />
@@ -47,8 +96,20 @@
         </div>
 
         <div class="row justify-end q-mt-lg">
-          <q-btn color="primary" size="small" label="Cancelar" class="q-mr-sm" flat :to="{ name: 'peticoes' }" />
-          <q-btn color="green" size="small" :label="editMode ? 'Atualizar' : 'Salvar modelo'" type="submit" />
+          <q-btn
+            color="primary"
+            size="small"
+            label="Cancelar"
+            class="q-mr-sm"
+            flat
+            :to="{ name: 'peticoes' }"
+          />
+          <q-btn
+            color="green"
+            size="small"
+            :label="editMode ? 'Atualizar' : 'Salvar modelo'"
+            type="submit"
+          />
         </div>
       </q-form>
     </div>
@@ -62,20 +123,20 @@ import { useQuasar, type QForm } from 'quasar'
 import { useNotification } from '@/composables/useNotification'
 import InputTextComponent from '@/components/InputTextComponent.vue'
 import SelectComponent from '@/components/SelectComponent.vue'
-import OpenAI from "openai"
+import OpenAI from 'openai'
 import TextEditorComponent from '@/components/TextEditorComponent.vue'
 import type { PeticaoModelo } from '@/types/peticoes/PeticaoModelo'
 import { usePeticaoService } from '@/services/api/peticao.service'
 
 const client = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  baseURL: "https://api.openai.com/v1",
+  baseURL: 'https://api.openai.com/v1',
   dangerouslyAllowBrowser: true,
 })
 
 const route = useRoute()
 const notification = useNotification()
-const $q = useQuasar();
+const $q = useQuasar()
 const peticaoService = usePeticaoService()
 
 const editMode = ref(false)
@@ -131,11 +192,11 @@ async function handleSubmit() {
 
   if (editMode.value && idPeticao.value) {
     peticaoService.update(idPeticao.value, {
-      ...formData.value
+      ...formData.value,
     })
-    
+
     notification.success('Modelo atualizado com sucesso!')
-  }else {
+  } else {
     const novo: PeticaoModelo = {
       nome: formData.value.nome,
       tipo: formData.value.tipo!,
@@ -154,10 +215,10 @@ async function enviar() {
 
   try {
     const response = await client.chat.completions.create({
-      model: "gpt-5.1",
+      model: 'gpt-5.1',
       messages: [
         {
-          role: "system",
+          role: 'system',
           content: `Você é um advogado especialista em direito brasileiro.
 
           Sua tarefa é gerar um MODELO DE PETIÇÃO JURÍDICA.
@@ -194,14 +255,14 @@ async function enviar() {
           Tipo de petição:
           ${formData.value.tipo}
 
-          Retorne um modelo completo com conteúdo realista.`
+          Retorne um modelo completo com conteúdo realista.`,
         },
         {
-          role: "user",
-          content: `Caso do cliente: ${formData.value.conteudo}`
-        }
+          role: 'user',
+          content: `Caso do cliente: ${formData.value.conteudo}`,
+        },
       ],
-      response_format: { type: "text" }
+      response_format: { type: 'text' },
     })
 
     const textoResposta = response.choices[0]?.message?.content || '{}'
@@ -210,7 +271,9 @@ async function enviar() {
     notification.success('Modelo gerado com sucesso!')
   } catch (erro: any) {
     console.error('Erro:', erro)
-    notification.error('Erro ao gerar modelo: ' + (erro.message || 'Desconhecido'))
+    notification.error(
+      'Erro ao gerar modelo: ' + (erro.message || 'Desconhecido'),
+    )
   } finally {
     loading.value = false
   }
