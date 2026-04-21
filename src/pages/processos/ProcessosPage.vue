@@ -246,12 +246,12 @@ function formatStatus(val: string) {
 
 function statusColor(val: string) {
   const map: Record<string, string> = {
-    ANDAMENTO:  'blue',
-    JULGAMENTO: 'orange',
-    SENTENCA:   'purple',
-    RECURSO:    'red',
-    ARQUIVADO:  'grey',
+    ANDAMENTO:  'primary',
+    JULGAMENTO: 'secondary',
+    SENTENCA:   'accent',
+    RECURSO:    'negative',
+    ARQUIVADO:  'grey-6',
   }
-  return map[val] ?? 'grey'
+  return map[val] ?? 'grey-6'
 }
 </script>
