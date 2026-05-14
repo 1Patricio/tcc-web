@@ -300,12 +300,12 @@ onMounted(() => load())
 
 .stat-card__label {
   font-size: 13px;
-  color: #757575;
+  color: #212121;
+  font-weight: 600;
   font-variant: small-caps;
   text-transform: lowercase;
 }
 
-/* ── Deadlines card ── */
 .deadlines-card {
   background: #ffffff;
   border: 2px solid #e0e0e0;
@@ -337,12 +337,10 @@ onMounted(() => load())
   color: #424242;
 }
 
-/* ── Table ── */
 .deadlines-table {
   cursor: pointer;
 }
 
-/* ── Prazo ── */
 .prazo-date {
   font-weight: 600;
   font-size: 13px;
@@ -365,7 +363,6 @@ onMounted(() => load())
   font-size: 12px;
 }
 
-/* ── Status label ── */
 .status-label {
   font-size: 13px;
   font-weight: 500;

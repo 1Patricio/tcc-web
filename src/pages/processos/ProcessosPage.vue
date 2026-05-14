@@ -79,6 +79,7 @@
         :columns="columns"
         row-key="id"
         :hide-bottom="processos.length > 0"
+        :pagination="{ rowsPerPage: 0 }"
         @row-click="(_, row) => onEditarProcesso(row)"
       >
         <template #header="props">

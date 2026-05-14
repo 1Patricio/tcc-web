@@ -112,8 +112,20 @@ const router = createRouter({
           name: 'timelines',
           component: () => import('@/pages/timelines/TimelinesPage.vue'),
           meta: { requiresAuth: true},
+        },
+        {
+          path: 'timelines/:processoId',
+          name: 'timeline-gestao',
+          component: () => import('@/pages/timelines/TimelineGestaoPage.vue'),
+          meta: { requiresAuth: true },
         }
       ],
+    },
+    {
+      path: '/timeline/publica/:processoId',
+      name: 'timeline-publica',
+      component: () => import('@/pages/timelines/TimelinePublicaPage.vue'),
+      meta: { requiresAuth: false },
     },
     {
       path: '/:pathMatch(.*)*', // rota 404
