@@ -103,7 +103,7 @@
                 class="prazo-date"
                 :class="prazoClass(props.row.dataPrazo)"
               >
-                {{ formatDate(props.row.dataPrazo) }}
+                {{ formatarData(props.row.dataPrazo) }}
               </span>
               <span class="prazo-hint text-grey-6 q-ml-sm">
                 {{ prazoLabel(props.row.dataPrazo) }}
@@ -140,6 +140,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { type QTableColumn } from 'quasar'
 import { useProcessoService } from '@/services'
+import { formatarData } from '@/utils/date'
 
 const router = useRouter()
 const processoService = useProcessoService()
@@ -221,12 +222,6 @@ async function load() {
 
 function irParaProcesso(processo: any) {
   router.push({ name: 'processo-view', params: { id: processo.id } })
-}
-
-function formatDate(val: string): string {
-  if (!val) return '-'
-  const date = new Date(val)
-  return date.toLocaleDateString('pt-BR')
 }
 
 function diasRestantes(val: string): number {

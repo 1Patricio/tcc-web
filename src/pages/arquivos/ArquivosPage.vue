@@ -68,7 +68,7 @@
                 <span class="text-weight-medium">{{ props.row.nome }}</span>
               </div>
             </q-td>
-            <q-td key="createdAt" :props="props">{{ props.row.createdAt }}</q-td>
+            <q-td key="createdAt" :props="props">{{ props.row._type === 'pasta' ? isoToBr(props.row.dataUltimaModificacao) : formatarDatetime(props.row.createdAt) }}</q-td>
 
             <q-menu context-menu touch-position>
               <q-list style="min-width: 160px">
@@ -129,6 +129,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 import { useRoute, useRouter } from 'vue-router'
 import { getFileIcon } from '@/utils/fileIcon'
+import { isoToBr, formatarDatetime } from '@/utils/date'
 
 const arquivosService = useArquivoService()
 const pastaService = usePastaService()
@@ -183,12 +184,6 @@ function buildBreadcrumbs(p: any): { id: string, nome: string }[] {
 
 onMounted(() => carregar(route.params.id as string))
 watch(() => route.params.id, (id) => { if (id) carregar(id as string) })
-
-function isoToBr(date: string | undefined) {
-  if (!date) return ''
-  const [year, month, day] = date.split('-')
-  return `${day}/${month}/${year}`
-}
 
 const columns: QTableColumn[] = [
   { name: 'nome',      field: 'nome',      label: 'Nome',        align: 'left', sortable: true },

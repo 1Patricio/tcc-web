@@ -118,7 +118,7 @@
                   {{ item.ultimoEvento.titulo }}
                 </p>
                 <p class="text-caption text-grey-5 q-mb-none">
-                  {{ formatarData(item.ultimoEvento.data) }}
+                  {{ formatarDataAbreviada(item.ultimoEvento.data) }}
                 </p>
               </div>
             </div>
@@ -169,6 +169,7 @@ import { useRouter } from 'vue-router'
 import { useTimelineService } from '@/services'
 import { useNotification } from '@/composables/useNotification'
 import type { TimelineResumo } from '@/types/timelines/TimelineEvento'
+import { formatarDataAbreviada } from '@/utils/date'
 
 const timelineService = useTimelineService()
 const notification = useNotification()
@@ -222,16 +223,6 @@ function tipoIcon(tipo: string) {
     OUTROS: 'info',
   }
   return map[tipo] ?? 'info'
-}
-
-function formatarData(data: string) {
-  if (!data) return ''
-  const date = new Date(data.split('T')[0] + 'T12:00:00')
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
 }
 
 function totalEventosLabel(total: number) {

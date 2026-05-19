@@ -1,15 +1,25 @@
 <template>
-  <q-layout view="hHh LpR fFf" class="bg-grey-2">
+  <q-layout
+    view="hHh LpR fFf"
+    class="bg-grey-2"
+  >
     <q-header class="bg-primary text-white">
-      <q-toolbar style="height: 80px;">
-        <q-toolbar-title class="q-ml-lg text-bold">
-          INTERM
-        </q-toolbar-title>
+      <q-toolbar style="height: 80px">
+        <q-toolbar-title class="q-ml-lg text-bold"> INTERM </q-toolbar-title>
 
-        <q-btn flat round dense icon="assignment_ind">
+        <q-btn
+          flat
+          round
+          dense
+          icon="assignment_ind"
+        >
           <q-menu>
             <q-list style="min-width: 170px">
-              <q-item clickable v-close-popup @click="logout">
+              <q-item
+                clickable
+                v-close-popup
+                @click="logout"
+              >
                 <q-item-section avatar>
                   <q-icon name="logout" />
                 </q-item-section>
@@ -35,16 +45,18 @@
       @mouseenter="onMouseenter"
       @mouseleave="onMouseleave"
     >
-      <q-scroll-area class="fit" :horizontal-thumb-style="{ opacity: '0' }">
+      <q-scroll-area
+        class="fit"
+        :horizontal-thumb-style="{ opacity: '0' }"
+      >
         <div class="drawer-wrapper">
-
           <div class="drawer-list">
             <q-btn
               v-for="item in menuItems"
               :key="item.route"
               :icon="item.icon"
               :label="miniState ? undefined : item.label"
-              :class="{ 'active': currentRoute.startsWith(item.route) }"
+              :class="{ active: currentRoute.startsWith(item.route) }"
               class="menu-button"
               flat
               no-caps
@@ -56,7 +68,10 @@
     </q-drawer>
 
     <q-page-container>
-      <div class="q-pa-lg q-mx-auto" style="max-width: 1200px;">
+      <div
+        class="q-pa-lg q-mx-auto"
+        style="max-width: 1200px"
+      >
         <router-view />
       </div>
     </q-page-container>
@@ -80,16 +95,20 @@ const miniState = ref(true)
 const nameUserAuth = ref('Bem Vindo!')
 const hoverTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
-const currentRoute = computed(() => route.name as string ?? '')
+const currentRoute = computed(() => (route.name as string) ?? '')
 
 const menuItems = [
-  { icon: 'home',      label: 'Home',                 route: 'home' },
-  { icon: 'work',      label: 'Processos',             route: 'processos' },
-  { icon: 'group',     label: 'Clientes',              route: 'clientes' },
-  { icon: 'folders',   label: 'Documentos',            route: 'pastas' },
-  { icon: 'task',      label: 'Modelos de Petição',    route: 'peticoes' },
-  { icon: 'menu_book', label: 'Jurisprudência TJRS',   route: 'jurisprudencia-rs' },
-  { icon: 'timeline',  label: 'Timeline',              route: 'timelines' },
+  { icon: 'home', label: 'Home', route: 'home' },
+  { icon: 'work', label: 'Processos', route: 'processos' },
+  { icon: 'group', label: 'Clientes', route: 'clientes' },
+  { icon: 'folders', label: 'Documentos', route: 'pastas' },
+  { icon: 'task', label: 'Modelos de Petição', route: 'peticoes' },
+  {
+    icon: 'menu_book',
+    label: 'Jurisprudência TJRS',
+    route: 'jurisprudencia-rs',
+  },
+  { icon: 'timeline', label: 'Timeline', route: 'timelines' },
 ]
 
 function onMouseenter() {

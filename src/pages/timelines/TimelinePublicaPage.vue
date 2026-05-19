@@ -122,7 +122,7 @@
             v-for="(evento, idx) in grupo.eventos"
             :key="evento.id"
             :title="evento.titulo"
-            :subtitle="formatarData(evento.data)"
+            :subtitle="formatarDataLonga(evento.data)"
             :side="idx % 2 === 0 ? 'right' : 'left'"
             :icon="tipoIcon(evento.tipo)"
             :color="tipoColor(evento.tipo)"
@@ -162,6 +162,7 @@ import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useTimelineService } from '@/services'
+import { formatarDataLonga, formatarMesAno } from '@/utils/date'
 import type {
   TimelineEvento,
   TimelinePublica,
@@ -226,21 +227,6 @@ async function autenticar() {
   } finally {
     carregando.value = false
   }
-}
-
-function formatarMesAno(data: string) {
-  const date = new Date(data.split('T')[0] + 'T12:00:00')
-  return date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-}
-
-function formatarData(data: string) {
-  if (!data) return ''
-  const date = new Date(data.split('T')[0] + 'T12:00:00')
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  })
 }
 
 const tiposEvento = [

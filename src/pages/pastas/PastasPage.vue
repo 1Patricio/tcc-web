@@ -90,6 +90,7 @@ import { debounce, type QTableColumn } from 'quasar'
 import { usePastaService } from '@/services/api/pasta.service'
 import type { Pasta } from '@/types/pastas/Pasta'
 import { useRouter } from 'vue-router'
+import { isoToBr } from '@/utils/date'
 
 const pastaService = usePastaService()
 const router = useRouter()
@@ -103,7 +104,7 @@ const term = ref('')
 
 const columns: QTableColumn[] = [
   { name: 'nome',                  field: 'nome',                  label: 'Cliente',                align: 'left', sortable: true },
-  { name: 'dataUltimaModificacao', field: 'dataUltimaModificacao', label: 'Última Modificação',     align: 'center' },
+  { name: 'dataUltimaModificacao', field: 'dataUltimaModificacao', label: 'Última Modificação', align: 'center', format: isoToBr },
 ]
 
 async function load() {

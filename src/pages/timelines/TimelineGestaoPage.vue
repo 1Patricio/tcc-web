@@ -357,6 +357,7 @@ import type { TimelineEvento } from '@/types/timelines/TimelineEvento'
 import InputDateComponent from '@/components/InputDateComponent.vue'
 import InputTextComponent from '@/components/InputTextComponent.vue'
 import SelectComponent from '@/components/SelectComponent.vue'
+import { formatarData, isoToBr, brToIso } from '@/utils/date'
 
 type EventoForm = {
   titulo: string
@@ -463,12 +464,6 @@ function instanciaLabel(instancia: string) {
   return map[instancia] ?? instancia
 }
 
-function formatarData(data: string) {
-  if (!data) return ''
-  const date = new Date(data.split('T')[0] + 'T12:00:00')
-  return date.toLocaleDateString('pt-BR')
-}
-
 function prazoClass(dataPrazo: string) {
   const hoje = new Date()
   hoje.setHours(0, 0, 0, 0)
@@ -482,14 +477,6 @@ function prazoClass(dataPrazo: string) {
 
 function formVazio(): EventoForm {
   return { titulo: '', tipo: 'OUTROS', data: '', descricao: '' }
-}
-
-function isoToBr(data: string) {
-  return data.split('T')[0].split('-').reverse().join('/')
-}
-
-function brToIso(data: string) {
-  return data.split('/').reverse().join('-')
 }
 
 function formDoEvento(evento: TimelineEvento): EventoForm {

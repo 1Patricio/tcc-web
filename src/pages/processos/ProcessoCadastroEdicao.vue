@@ -162,6 +162,7 @@ import InputTextComponent from '@/components/InputTextComponent.vue'
 import SelectComponent from '@/components/SelectComponent.vue'
 import type { Cliente } from '@/types/clientes/Cliente'
 import { useClienteService, useProcessoService } from '@/services'
+import { isoToBr, brToIso } from '@/utils/date'
 
 const route = useRoute()
 const router = useRouter()
@@ -215,18 +216,6 @@ const tipoAcao = [
   { title: 'Consumidor', value: 'CONSUMIDOR' },
   { title: 'Outros', value: 'OUTROS' }
 ]
-
-function isoToBr(date: string) {
-  if (!date) return ''
-  const [year, month, day] = date.split('-')
-  return `${day}/${month}/${year}`
-}
-
-function brToIso(date: string) {
-  if (!date) return ''
-  const [day, month, year] = date.split('/')
-  return `${year}-${month}-${day}`
-}
 
 function requiredField(val: any, fieldName = 'Campo'): boolean | string {
   return !!val || `${fieldName} é obrigatório`
