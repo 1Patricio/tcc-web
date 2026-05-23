@@ -353,7 +353,7 @@ import { useRoute } from 'vue-router'
 import { type QForm, type QTableColumn } from 'quasar'
 import { useProcessoService, useTimelineService } from '@/services'
 import { useNotification } from '@/composables/useNotification'
-import type { TimelineEvento } from '@/types/timelines/TimelineEvento'
+import type { TimelineEvento, TipoEvento } from '@/types/timelines/TimelineEvento'
 import InputDateComponent from '@/components/InputDateComponent.vue'
 import InputTextComponent from '@/components/InputTextComponent.vue'
 import SelectComponent from '@/components/SelectComponent.vue'
@@ -361,7 +361,7 @@ import { formatarData, isoToBr, brToIso } from '@/utils/date'
 
 type EventoForm = {
   titulo: string
-  tipo: string
+  tipo: TipoEvento
   data: string
   descricao: string
 }
@@ -385,7 +385,7 @@ const eventos = ref<TimelineEvento[]>([])
 const editandoEvento = ref<TimelineEvento | null>(null)
 const eventoParaExcluir = ref<TimelineEvento | null>(null)
 
-const form = ref({ titulo: '', tipo: 'OUTROS', data: '', descricao: '' })
+const form = ref<EventoForm>({ titulo: '', tipo: 'OUTROS', data: '', descricao: '' })
 
 const eventosSorted = computed(() =>
   [...eventos.value].sort(

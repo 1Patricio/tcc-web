@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { useNotification } from './useNotification'
+
 export function useApi(baseUrl?: string) {
 
   const apiBaseUrl = baseUrl || import.meta.env.VITE_API_BASE_URL
@@ -33,7 +35,9 @@ export function useApi(baseUrl?: string) {
   apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
-      console.error('Erro na requisição:', error.response?.data || error.message)
+      const message =
+        error.response?.data?.message || 'Ocorreu um erro inesperado. Tente novamente.'
+      useNotification().error(message)
       return Promise.reject(error)
     }
   )
