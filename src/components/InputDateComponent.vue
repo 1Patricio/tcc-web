@@ -5,13 +5,33 @@
     </p>
   </div>
 
-  <q-input :dense="dense" :outlined="outlined" v-model="model" mask="##/##/####">
+  <q-input
+    :dense="dense"
+    :outlined="outlined"
+    v-model="model"
+    mask="##/##/####"
+  >
     <template v-slot:append>
-      <q-icon name="event" class="cursor-pointer">
-        <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-          <q-date v-model="model" mask="DD/MM/YYYY">
+      <q-icon
+        name="event"
+        class="cursor-pointer"
+      >
+        <q-popup-proxy
+          cover
+          transition-show="scale"
+          transition-hide="scale"
+        >
+          <q-date
+            v-model="model"
+            mask="DD/MM/YYYY"
+          >
             <div class="row items-center justify-end">
-              <q-btn v-close-popup label="Fechar" color="red" flat />
+              <q-btn
+                v-close-popup
+                label="Fechar"
+                color="red"
+                flat
+              />
             </div>
           </q-date>
         </q-popup-proxy>
@@ -42,6 +62,6 @@ const emit = defineEmits<{
 
 const model = computed({
   get: () => props.modelValue,
-  set: (val: string) => emit('update:modelValue', val)
+  set: (val: string) => emit('update:modelValue', val),
 })
 </script>

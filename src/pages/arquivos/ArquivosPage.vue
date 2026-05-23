@@ -1,38 +1,82 @@
 <template>
   <div class="q-pa-md">
-    <div class="flex justify-between items-center q-mb-sm" style="height: 80px;">
+    <div
+      class="flex justify-between items-center q-mb-sm"
+      style="height: 80px"
+    >
       <div class="flex column">
         <div class="row items-center q-gutter-xs q-mb-xs">
-          <span class="text-grey-6 cursor-pointer text-sm" @click="router.push({ name: 'pastas' })">
+          <span
+            class="text-grey-6 cursor-pointer text-sm"
+            @click="router.push({ name: 'pastas' })"
+          >
             Documentos
           </span>
-          <template v-for="(crumb, i) in breadcrumbs" :key="crumb.id">
-            <q-icon name="chevron_right" size="16px" color="grey-5" />
+          <template
+            v-for="(crumb, i) in breadcrumbs"
+            :key="crumb.id"
+          >
+            <q-icon
+              name="chevron_right"
+              size="16px"
+              color="grey-5"
+            />
             <span
-              :class="i === breadcrumbs.length - 1 ? 'text-primary text-bold text-sm' : 'text-grey-6 cursor-pointer text-sm'"
-              @click="i < breadcrumbs.length - 1 && router.push({ name: 'arquivos', params: { id: crumb.id } })"
+              :class="
+                i === breadcrumbs.length - 1
+                  ? 'text-primary text-bold text-sm'
+                  : 'text-grey-6 cursor-pointer text-sm'
+              "
+              @click="
+                i < breadcrumbs.length - 1 &&
+                router.push({ name: 'arquivos', params: { id: crumb.id } })
+              "
             >
               {{ crumb.nome }}
             </span>
           </template>
         </div>
-        <h4 class="text-terciary text-bold q-my-none">{{ pasta?.nome ?? 'Arquivos' }}</h4>
+        <h4 class="text-terciary text-bold q-my-none">
+          {{ pasta?.nome ?? 'Arquivos' }}
+        </h4>
       </div>
 
       <div>
-        <q-btn icon="cloud_upload" label="Upload Arquivo" color="primary" no-caps :loading="isLoading" @click="triggerFilePicker" />
-        <q-file ref="fileRef" v-model="file" style="display: none" @update:model-value="onFileSelected" />
+        <q-btn
+          icon="cloud_upload"
+          label="Upload Arquivo"
+          color="primary"
+          no-caps
+          :loading="isLoading"
+          @click="triggerFilePicker"
+        />
+        <q-file
+          ref="fileRef"
+          v-model="file"
+          style="display: none"
+          @update:model-value="onFileSelected"
+        />
       </div>
     </div>
   </div>
 
   <div class="q-pa-md">
-    <div v-if="isLoading" class="column items-center q-gutter-y-md q-pa-xl">
-      <q-spinner-hourglass color="primary" size="4em" />
+    <div
+      v-if="isLoading"
+      class="column items-center q-gutter-y-md q-pa-xl"
+    >
+      <q-spinner-hourglass
+        color="primary"
+        size="4em"
+      />
       <span class="text-grey-8">Carregando...</span>
     </div>
 
-    <q-infinite-scroll v-else @load="loadMore" :offset="250">
+    <q-infinite-scroll
+      v-else
+      @load="loadMore"
+      :offset="250"
+    >
       <q-table
         flat
         bordered
@@ -56,44 +100,102 @@
         </template>
 
         <template #body="props">
-          <q-tr :props="props" @click="onRowClick(props.row)" style="cursor: pointer">
-            <q-td key="nome" :props="props">
+          <q-tr
+            :props="props"
+            @click="onRowClick(props.row)"
+            style="cursor: pointer"
+          >
+            <q-td
+              key="nome"
+              :props="props"
+            >
               <div class="row items-center">
                 <q-icon
-                  :name="props.row._type === 'pasta' ? 'folder' : getFileIcon(props.row.nome).icon"
-                  :color="props.row._type === 'pasta' ? 'secondary' : getFileIcon(props.row.nome).color"
+                  :name="
+                    props.row._type === 'pasta'
+                      ? 'folder'
+                      : getFileIcon(props.row.nome).icon
+                  "
+                  :color="
+                    props.row._type === 'pasta'
+                      ? 'secondary'
+                      : getFileIcon(props.row.nome).color
+                  "
                   class="q-mr-sm"
                   size="22px"
                 />
                 <span class="text-weight-medium">{{ props.row.nome }}</span>
               </div>
             </q-td>
-            <q-td key="createdAt" :props="props">{{ props.row._type === 'pasta' ? isoToBr(props.row.dataUltimaModificacao) : formatarDatetime(props.row.createdAt) }}</q-td>
+            <q-td
+              key="createdAt"
+              :props="props"
+              >{{
+                props.row._type === 'pasta'
+                  ? isoToBr(props.row.dataUltimaModificacao)
+                  : formatarDatetime(props.row.createdAt)
+              }}</q-td
+            >
 
-            <q-menu context-menu touch-position>
+            <q-menu
+              context-menu
+              touch-position
+            >
               <q-list style="min-width: 160px">
                 <template v-if="props.row._type === 'pasta'">
-                  <q-item clickable v-close-popup @click="onRowClick(props.row)">
-                    <q-item-section avatar><q-icon name="folder_open" color="secondary" /></q-item-section>
+                  <q-item
+                    clickable
+                    v-close-popup
+                    @click="onRowClick(props.row)"
+                  >
+                    <q-item-section avatar
+                      ><q-icon
+                        name="folder_open"
+                        color="secondary"
+                    /></q-item-section>
                     <q-item-section>Abrir</q-item-section>
                   </q-item>
                 </template>
 
                 <template v-else>
-                  <q-item clickable v-close-popup @click="onRowClick(props.row)">
-                    <q-item-section avatar><q-icon name="visibility" color="primary" /></q-item-section>
+                  <q-item
+                    clickable
+                    v-close-popup
+                    @click="onRowClick(props.row)"
+                  >
+                    <q-item-section avatar
+                      ><q-icon
+                        name="visibility"
+                        color="primary"
+                    /></q-item-section>
                     <q-item-section>Visualizar</q-item-section>
                   </q-item>
 
-                  <q-item clickable v-close-popup @click="downloadArquivo(props.row)">
-                    <q-item-section avatar><q-icon name="download" color="green-7" /></q-item-section>
+                  <q-item
+                    clickable
+                    v-close-popup
+                    @click="downloadArquivo(props.row)"
+                  >
+                    <q-item-section avatar
+                      ><q-icon
+                        name="download"
+                        color="green-7"
+                    /></q-item-section>
                     <q-item-section>Download</q-item-section>
                   </q-item>
 
                   <q-separator />
 
-                  <q-item clickable v-close-popup @click="confirmarExclusao(props.row)">
-                    <q-item-section avatar><q-icon name="delete" color="red-6" /></q-item-section>
+                  <q-item
+                    clickable
+                    v-close-popup
+                    @click="confirmarExclusao(props.row)"
+                  >
+                    <q-item-section avatar
+                      ><q-icon
+                        name="delete"
+                        color="red-6"
+                    /></q-item-section>
                     <q-item-section class="text-red-6">Excluir</q-item-section>
                   </q-item>
                 </template>
@@ -140,7 +242,7 @@ const $q = useQuasar()
 
 const isLoading = ref(false)
 const pasta = ref<any>(null)
-const breadcrumbs = ref<{ id: string, nome: string }[]>([])
+const breadcrumbs = ref<{ id: string; nome: string }[]>([])
 const documentos = ref<any[]>([])
 
 const file = ref<File | null>(null)
@@ -162,7 +264,10 @@ async function carregar(id: string) {
     ])
     pasta.value = pastaData
     breadcrumbs.value = buildBreadcrumbs(pastaData)
-    const subpastas = (pastaData.subpastas ?? []).map((p: any) => ({ ...p, _type: 'pasta' }))
+    const subpastas = (pastaData.subpastas ?? []).map((p: any) => ({
+      ...p,
+      _type: 'pasta',
+    }))
     const files = (arquivos ?? []).map((a: any) => ({ ...a, _type: 'arquivo' }))
     documentos.value = [...subpastas, ...files]
   } catch (err) {
@@ -172,8 +277,8 @@ async function carregar(id: string) {
   }
 }
 
-function buildBreadcrumbs(p: any): { id: string, nome: string }[] {
-  const crumbs: { id: string, nome: string }[] = []
+function buildBreadcrumbs(p: any): { id: string; nome: string }[] {
+  const crumbs: { id: string; nome: string }[] = []
   let current = p
   while (current) {
     crumbs.unshift({ id: current.id, nome: current.nome })
@@ -183,24 +288,40 @@ function buildBreadcrumbs(p: any): { id: string, nome: string }[] {
 }
 
 onMounted(() => carregar(route.params.id as string))
-watch(() => route.params.id, (id) => { if (id) carregar(id as string) })
+watch(
+  () => route.params.id,
+  (id) => {
+    if (id) carregar(id as string)
+  },
+)
 
 const columns: QTableColumn[] = [
-  { name: 'nome',      field: 'nome',      label: 'Nome',        align: 'left', sortable: true },
-  { name: 'createdAt', field: 'createdAt', label: 'Modificação', align: 'left' },
+  { name: 'nome', field: 'nome', label: 'Nome', align: 'left', sortable: true },
+  {
+    name: 'createdAt',
+    field: 'createdAt',
+    label: 'Modificação',
+    align: 'left',
+  },
 ]
 
 function isValidFile(arquivo: File) {
   const allowed = [
     'application/pdf',
-    'image/png', 'image/jpeg', 'image/gif', 'image/webp',
+    'image/png',
+    'image/jpeg',
+    'image/gif',
+    'image/webp',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
-    'text/csv', 'text/plain',
+    'text/csv',
+    'text/plain',
   ]
   if (!allowed.includes(arquivo.type)) {
-    warning('Tipo de arquivo não permitido. Use PDF, imagem, Word, Excel ou CSV.')
+    warning(
+      'Tipo de arquivo não permitido. Use PDF, imagem, Word, Excel ou CSV.',
+    )
     return false
   }
   if (arquivo.size > 50 * 1024 * 1024) {
@@ -217,7 +338,10 @@ async function onFileSelected(selectedFile: File | null) {
   }
   try {
     isLoading.value = true
-    const resultado = await arquivosService.upload(route.params.id as string, selectedFile)
+    const resultado = await arquivosService.upload(
+      route.params.id as string,
+      selectedFile,
+    )
     documentos.value.push({ ...resultado, _type: 'arquivo' })
   } catch (err) {
     console.error('Erro no upload:', err)
@@ -289,7 +413,7 @@ function confirmarExclusao(arquivo: Arquivo) {
   }).onOk(async () => {
     try {
       await arquivosService.remove(arquivo.id)
-      documentos.value = documentos.value.filter(d => d.id !== arquivo.id)
+      documentos.value = documentos.value.filter((d) => d.id !== arquivo.id)
       success('Arquivo excluído com sucesso.')
     } catch (err) {
       error('Erro ao excluir arquivo.')
