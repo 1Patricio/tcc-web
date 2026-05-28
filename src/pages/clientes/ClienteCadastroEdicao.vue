@@ -18,6 +18,7 @@
             label="Nome"
             dense
             outlined
+            :rules="[val => requiredField(val, 'Nome')]"
           />
         </div>
 
@@ -86,6 +87,7 @@
           size="small"
           :label="editMode ? 'Atualizar' : 'Cadastrar'"
           type="submit"
+          :loading="isLoading"
         />
       </div>
 
@@ -167,10 +169,15 @@ async function handleSubmit() {
     return
   }
 
-  if (editMode.value) {
-    updateCliente()
-  } else {
-    createCliente()
+  isLoading.value = true
+  try {
+    if (editMode.value) {
+      await updateCliente()
+    } else {
+      await createCliente()
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 

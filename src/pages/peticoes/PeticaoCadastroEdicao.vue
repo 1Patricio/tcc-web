@@ -28,6 +28,7 @@
           size="small"
           :label="editMode ? 'Atualizar' : 'Salvar modelo'"
           @click="handleSubmit()"
+          :loading="isLoading"
         />
       </div>
     </div>
@@ -109,6 +110,7 @@
             size="small"
             :label="editMode ? 'Atualizar' : 'Salvar modelo'"
             type="submit"
+            :loading="isLoading"
           />
         </div>
       </q-form>
@@ -143,6 +145,7 @@ const editMode = ref(false)
 const idPeticao = ref<string>()
 const formRef = ref<InstanceType<typeof QForm> | null>(null)
 const loading = ref(false)
+const isLoading = ref(false)
 
 const formData = ref({
   nome: '',
@@ -190,21 +193,28 @@ async function handleSubmit() {
     return
   }
 
-  if (editMode.value && idPeticao.value) {
-    peticaoService.update(idPeticao.value, {
-      ...formData.value,
-    })
+  isLoading.value = true
+  try {
+    if (editMode.value && idPeticao.value) {
+      await peticaoService.update(idPeticao.value, {
+        ...formData.value,
+      })
 
-    notification.success('Modelo atualizado com sucesso!')
-  } else {
-    const novo: PeticaoModelo = {
-      nome: formData.value.nome,
-      tipo: formData.value.tipo!,
-      conteudo: formData.value.conteudo,
+      notification.success('Modelo atualizado com sucesso!')
+    } else {
+      const novo: PeticaoModelo = {
+        nome: formData.value.nome,
+        tipo: formData.value.tipo!,
+        conteudo: formData.value.conteudo,
+      }
+
+      await peticaoService.create(novo)
+      notification.success('Modelo salvo com sucesso!')
     }
-
-    peticaoService.create(novo)
-    notification.success('Modelo salvo com sucesso!')
+  } catch {
+    notification.error('Erro ao salvar modelo.')
+  } finally {
+    isLoading.value = false
   }
 }
 

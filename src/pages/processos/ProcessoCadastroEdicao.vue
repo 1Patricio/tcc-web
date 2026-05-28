@@ -143,6 +143,7 @@
             size="small"
             :label="editMode ? 'Atualizar' : 'Cadastrar'"
             type="submit"
+            :loading="isLoading"
           />
         </div>
       </q-form>
@@ -174,6 +175,7 @@ const editMode = ref(false)
 const idProcesso = ref<string>()
 const clientes = ref<Cliente[]>([])
 const formRef = ref<InstanceType<typeof QForm> | null>(null)
+const isLoading = ref(false)
 
 const formData = ref({
   id: '',
@@ -250,10 +252,15 @@ async function handleSubmit() {
     return
   }
 
-  if (editMode.value) {
-    await updateProcesso()
-  } else {
-    await createProcesso()
+  isLoading.value = true
+  try {
+    if (editMode.value) {
+      await updateProcesso()
+    } else {
+      await createProcesso()
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 
