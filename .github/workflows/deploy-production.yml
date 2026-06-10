@@ -35,6 +35,8 @@ jobs:
       - name: Build
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
+          VITE_API_BASE_URL: https://api.nextforum.com.br
+          VITE_OPENAI_API_URL: https://api.openai.com/v1/chat/completions
           VITE_OPENAI_API_KEY: ${{ secrets.VITE_OPENAI_API_KEY }}
         run: npm run build
 
