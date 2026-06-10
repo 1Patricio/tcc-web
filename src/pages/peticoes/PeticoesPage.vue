@@ -13,6 +13,24 @@
         :to="{ name: 'peticoes-form' }"
       />
     </div>
+
+    <div class="row q-col-gutter-sm q-mb-md">
+      <div class="col-12 col-md-4">
+        <q-input
+          v-model="busca"
+          outlined
+          dense
+          bg-color="white"
+          placeholder="Buscar por nome ou tipo..."
+          clearable
+          clear-icon="close"
+        >
+          <template #prepend>
+            <q-icon name="search" size="18px" />
+          </template>
+        </q-input>
+      </div>
+    </div>
   </div>
 
   <div class="q-pa-md">
@@ -25,11 +43,11 @@
         v-model:pagination="tablePagination"
         flat
         bordered
-        :rows="peticoes"
+        :rows="peticoesFiltradas"
         :columns="columns"
         :loading="isLoading"
         row-key="id"
-        :hide-bottom="peticoes.length > 0"
+        :hide-bottom="peticoesFiltradas.length > 0"
         @row-click="(_, row) => onEditarPeticao(row)"
       >
         <template #header="props">
@@ -86,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { type QTableColumn } from 'quasar'
 import { useRouter } from 'vue-router'
 import type { PeticaoModelo } from '@/types/peticoes/PeticaoModelo'
@@ -99,6 +117,17 @@ const peticoes = ref<PeticaoModelo[]>([])
 const isLoading = ref(true)
 const tablePagination = ref({ rowsPerPage: 0 })
 const hasMore = ref(true)
+const busca = ref('')
+
+const peticoesFiltradas = computed(() => {
+  const termo = busca.value?.trim().toLowerCase()
+  if (!termo) return peticoes.value
+  return peticoes.value.filter(
+    (p) =>
+      p.nome.toLowerCase().includes(termo) ||
+      formatTipo(p.tipo).toLowerCase().includes(termo),
+  )
+})
 
 const columns: QTableColumn[] = [
   {
