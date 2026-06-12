@@ -140,7 +140,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { type QTableColumn } from 'quasar'
 import { useProcessoService } from '@/services'
-import { formatarData } from '@/utils/date'
+import { formatarData, parseSafeDate } from '@/utils/date'
 
 const router = useRouter()
 const processoService = useProcessoService()
@@ -227,7 +227,7 @@ function irParaProcesso(processo: any) {
 function diasRestantes(val: string): number {
   const hoje = new Date()
   hoje.setHours(0, 0, 0, 0)
-  const prazo = new Date(val)
+  const prazo = parseSafeDate(val)
   prazo.setHours(0, 0, 0, 0)
   return Math.round((prazo.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
 }

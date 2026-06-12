@@ -1,4 +1,4 @@
-function parseSafeDate(date: string): Date {
+export function parseSafeDate(date: string): Date {
   return new Date(date.split('T')[0] + 'T12:00:00')
 }
 
