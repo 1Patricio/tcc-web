@@ -26,7 +26,7 @@
           label="Buscar no TJRS"
           class="q-ml-sm"
           style="margin-top: 20px;"
-          :loading="loading"
+          :loading="isLoading"
           :disabled="!formData.palavraChave?.trim()"
           @click="buscarJurisprudenciaRS(formData.palavraChave, formData.tipoPesquisa)"
         />
@@ -42,17 +42,36 @@
       />
     </div>
 
-    <div v-if="resultadoHtml" class="q-mt-lg">
+    <div v-if="resultados.length > 0" class="q-mt-lg">
       <q-separator class="q-mb-md" />
 
       <div class="text-h6 q-mb-md">
         {{ totalEncontrado }} Jurisprudência{{ totalEncontrado !== 1 ? 's' : '' }} Encontrada{{ totalEncontrado !== 1 ? 's' : '' }}
       </div>
 
-      <div class="resultado-html" v-html="resultadoHtml" />
+      <q-card v-for="item in resultados" :key="item.codEmenta" flat bordered class="q-mb-md">
+        <q-card-section>
+          <div class="text-subtitle2 text-weight-bold text-primary q-mb-xs">
+            {{ item.tipoProcesso }} — {{ item.orgaoJulgador }}
+          </div>
+          <div class="text-caption text-grey-7 q-mb-sm">
+            Processo: {{ item.numeroProcesso }}
+            <span v-if="item.relator"> | Relator: {{ item.relator }}</span>
+            <span v-if="item.dataJulgamento"> | {{ new Date(item.dataJulgamento).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) }}</span>
+          </div>
+          <div class="text-body2">{{ item.ementa }}</div>
+        </q-card-section>
+        <q-card-actions>
+          <q-btn
+            flat dense color="primary" icon="open_in_new" label="Ver no TJRS"
+            :href="`https://www.tjrs.jus.br/buscas/jurisprudencia/?q_palavra_chave=${item.numeroProcesso}&conteudo_busca=ementa_completa`"
+            target="_blank" rel="noopener noreferrer"
+          />
+        </q-card-actions>
+      </q-card>
     </div>
 
-    <div v-else-if="buscaRealizada && !loading" class="q-mt-lg text-center text-grey-6">
+    <div v-else-if="buscaRealizada && !isLoading" class="q-mt-lg text-center text-grey-6">
       <q-icon name="search_off" size="48px" color="grey-6" />
       <p>Nenhuma jurisprudência encontrada</p>
     </div>
@@ -63,14 +82,14 @@
 import InputTextComponent from '@/components/InputTextComponent.vue'
 import { useNotification } from '@/composables/useNotification'
 import { useJurisprudenciaService } from '@/services/api/jurisprudencia.service'
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
 
 const jurisprudenciaService = useJurisprudenciaService()
 const notification = useNotification()
 
-const resultadoHtml = ref('')
+const resultados = ref<any[]>([])
 const totalEncontrado = ref(0)
-const loading = ref(false)
+const isLoading = ref(false)
 const buscaRealizada = ref(false)
 
 const formData = ref({
@@ -84,88 +103,27 @@ const options = [
 ]
 
 async function buscarJurisprudenciaRS(termo: string, tipoConsulta: string) {
-  loading.value = true
+  isLoading.value = true
   buscaRealizada.value = false
-  resultadoHtml.value = ''
+  resultados.value = []
 
   try {
     const data = await jurisprudenciaService.buscaRs(termo, tipoConsulta)
 
-    if (!data.data?.html || data.data?.total === 0) {
+    if (!data.resultados?.length) {
       notification.warning('Nenhuma jurisprudência encontrada')
       return
     }
 
-    resultadoHtml.value = data.data.html
-    totalEncontrado.value = data.data.total
-
-    await nextTick()
-    document.querySelectorAll('.ver-integra-placeholder').forEach(placeholder => {
-      const card = placeholder.closest('.result-juris')
-      const processLink = card?.querySelector('a.a-results') as HTMLAnchorElement | null
-      if (processLink) {
-        const link = document.createElement('a')
-        link.href = processLink.href
-        link.target = '_blank'
-        link.rel = 'noopener noreferrer'
-        link.textContent = 'Ver processo no TJRS →'
-        link.className = 'ver-tjrs-link'
-        placeholder.replaceWith(link)
-      } else {
-        placeholder.remove()
-      }
-    })
+    resultados.value = data.resultados
+    totalEncontrado.value = data.total
 
   } catch (error) {
     notification.error('Erro ao buscar jurisprudências')
   } finally {
-    loading.value = false
+    isLoading.value = false
     buscaRealizada.value = true
   }
 }
 </script>
 
-<style>
-.resultado-html .result-juris {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
-  background: #fff;
-}
-
-.resultado-html .title-results {
-  font-weight: bold;
-  color: #333;
-}
-
-.resultado-html .a-results {
-  color: #911702 !important;
-  text-decoration: underline !important;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.resultado-html .a-results:hover {
-  color: #6b1001 !important;
-}
-
-.resultado-html .ver-tjrs-link {
-  color: #911702;
-  font-weight: 600;
-  font-size: 0.85rem;
-  text-decoration: none;
-}
-
-.resultado-html .ver-tjrs-link:hover {
-  text-decoration: underline;
-}
-
-.resultado-html hr {
-  display: none;
-}
-
-.resultado-html .aviso {
-  display: none;
-}
-</style>
