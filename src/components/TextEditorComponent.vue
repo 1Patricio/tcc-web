@@ -87,12 +87,3 @@ const fontOptions = {
   verdana: 'Verdana'
 }
 </script>
-
-<style scoped>
-.text-editor :deep(.q-editor__toolbar) {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: white;
-}
-</style>

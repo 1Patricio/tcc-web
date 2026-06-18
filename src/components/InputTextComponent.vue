@@ -8,13 +8,15 @@
       v-model="model" 
       class="full-width custom-input" 
       :type="type" 
-      :outlined="outlined" 
-      :dense="dense" 
+      :outlined="outlined"
+      :dense="dense"
       :mask="mask"
-      :rules="rules" 
-      :hint="hint" 
-      :borderless="borderless" 
-      :rounded="rounded" 
+      :rules="rules"
+      :hint="hint"
+      :borderless="borderless"
+      :rounded="rounded"
+      :readonly="readonly"
+      :disable="disable"
       hide-bottom-space
     >
       <template v-if="$slots.append" #append>
@@ -38,6 +40,8 @@ const props = defineProps<{
   hint?: string
   borderless?: boolean
   rounded?: boolean
+  readonly?: boolean
+  disable?: boolean
   rules?: QInputProps['rules']
 }>()
 

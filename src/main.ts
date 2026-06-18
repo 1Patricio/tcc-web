@@ -7,6 +7,7 @@ import router from './router'
 import { Quasar, Dialog, Notify } from 'quasar'
 import 'quasar/dist/quasar.css'
 import '@quasar/extras/material-icons/material-icons.css'
+import '@/css/app.scss'
 import langPtBr from 'quasar/lang/pt-BR'
 
 const app = createApp(App)

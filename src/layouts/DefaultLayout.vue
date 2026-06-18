@@ -7,29 +7,50 @@
       <q-toolbar style="height: 80px">
         <q-toolbar-title class="q-ml-lg text-bold"> INTERM </q-toolbar-title>
 
-        <q-btn
-          flat
-          round
-          dense
-          icon="assignment_ind"
-        >
-          <q-menu>
-            <q-list style="min-width: 170px">
-              <q-item
-                clickable
-                v-close-popup
-                @click="logout"
-              >
-                <q-item-section avatar>
-                  <q-icon name="logout" />
-                </q-item-section>
-                <q-item-section>Sair</q-item-section>
-              </q-item>
-            </q-list>
-          </q-menu>
-        </q-btn>
+        <div class="row items-center" style="gap: 12px;">
+          <span class="text-white" style="font-size: 14px; font-weight: 500;">{{ nameUserAuth }}</span>
 
-        {{ nameUserAuth }}
+          <q-btn
+            flat
+            round
+            dense
+            :padding="fotoUsuario ? '2px' : undefined"
+            :icon="fotoUsuario ? undefined : 'account_circle'"
+          >
+            <div
+              v-if="fotoUsuario"
+              class="toolbar-avatar"
+              :style="{ backgroundImage: `url(${fotoUsuario})` }"
+            />
+            <q-menu>
+              <q-list style="min-width: 170px;">
+                <q-item
+                  clickable
+                  v-close-popup
+                  :to="{ name: 'perfil' }"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="manage_accounts" />
+                  </q-item-section>
+                  <q-item-section>Meu perfil</q-item-section>
+                </q-item>
+
+                <q-separator />
+
+                <q-item
+                  clickable
+                  v-close-popup
+                  @click="logout"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="logout" />
+                  </q-item-section>
+                  <q-item-section>Sair</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -79,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotification } from '@/composables/useNotification'
 import { useAuthService } from '@/services/api/auth.service'
@@ -93,6 +114,7 @@ const route = useRoute()
 const drawer = ref(false)
 const miniState = ref(true)
 const nameUserAuth = ref('Bem Vindo!')
+const fotoUsuario = ref<string>('')
 const hoverTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
 const currentRoute = computed(() => (route.name as string) ?? '')
@@ -125,23 +147,37 @@ function onMouseleave() {
   miniState.value = true
 }
 
-onMounted(async () => {
+async function fetchUsuario() {
   const response = await authService.refresh()
   nameUserAuth.value = response.user.nome
-})
+  fotoUsuario.value = response.user.fotoPerfil ?? ''
+}
+
+onMounted(fetchUsuario)
+
+watch(() => route.name, fetchUsuario)
 
 function logout() {
   try {
     authService.logout()
     router.push({ name: 'login' })
-  } catch (error) {
+  } catch {
     notification.error('Erro ao fazer logout')
-    console.error(error)
   }
 }
 </script>
 
 <style scoped lang="scss">
+.toolbar-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
 .drawer-wrapper {
   display: flex;
   flex-direction: column;
