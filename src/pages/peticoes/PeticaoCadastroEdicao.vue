@@ -138,10 +138,10 @@
                     >
                       <div
                         class="ai-icon-wrap"
-                        :style="{ background: steps[stepAtual].gradient }"
+                        :style="{ background: currentStep.gradient }"
                       >
                         <q-icon
-                          :name="steps[stepAtual].icon"
+                          :name="currentStep.icon"
                           size="40px"
                           color="white"
                         />
@@ -150,13 +150,13 @@
                         class="text-subtitle1 text-bold q-mt-lg"
                         style="color: #4a4a4a"
                       >
-                        {{ steps[stepAtual].titulo }}
+                        {{ currentStep.titulo }}
                       </div>
                       <div
                         class="text-body2 q-mt-xs"
                         style="color: #7a7a7a"
                       >
-                        {{ steps[stepAtual].descricao }}
+                        {{ currentStep.descricao }}
                       </div>
                       <div class="ai-dots q-mt-lg">
                         <span /><span /><span />
@@ -213,7 +213,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuasar, type QForm } from 'quasar'
 import { useNotification } from '@/composables/useNotification'
@@ -242,6 +242,7 @@ const loading = ref(false)
 const isLoading = ref(false)
 const prompt = ref('')
 const stepAtual = ref(0)
+const currentStep = computed(() => steps[stepAtual.value] ?? steps[0])
 let stepTimer: ReturnType<typeof setInterval> | null = null
 let abortController: AbortController | null = null
 
