@@ -118,6 +118,12 @@ const router = createRouter({
           name: 'timeline-gestao',
           component: () => import('@/pages/timelines/TimelineGestaoPage.vue'),
           meta: { requiresAuth: true },
+        },
+        {
+          path: 'perfil',
+          name: 'perfil',
+          component: () => import('@/pages/auth/AlterarSenhaPage.vue'),
+          meta: { requiresAuth: true },
         }
       ],
     },

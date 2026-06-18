@@ -25,6 +25,22 @@ export function useAuthService() {
     return response.data;
   }
 
+  async function updatePerfil(data: {
+    nome: string;
+    email: string;
+    novaSenha?: string;
+    foto?: File | null;
+  }) {
+    const formData = new FormData();
+    formData.append("nome", data.nome);
+    formData.append("email", data.email);
+    if (data.novaSenha) formData.append("novaSenha", data.novaSenha);
+    if (data.foto) formData.append("foto", data.foto);
+
+    const response = await api.put("/auth/perfil", formData);
+    return response.data;
+  }
+
   async function logout() {
     try {
       localStorage.removeItem('token')
@@ -38,6 +54,7 @@ export function useAuthService() {
     register,
     login,
     refresh,
+    updatePerfil,
     logout,
   };
 }
