@@ -242,7 +242,7 @@ const loading = ref(false)
 const isLoading = ref(false)
 const prompt = ref('')
 const stepAtual = ref(0)
-const currentStep = computed(() => steps[stepAtual.value] ?? steps[0])
+const currentStep = computed(() => steps[stepAtual.value % steps.length]!)
 let stepTimer: ReturnType<typeof setInterval> | null = null
 let abortController: AbortController | null = null
 
