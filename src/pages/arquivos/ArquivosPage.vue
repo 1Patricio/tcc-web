@@ -389,9 +389,8 @@ async function onRowClick(row: any) {
 
 async function downloadArquivo(arquivo: Arquivo) {
   try {
-    const presignedUrl = await arquivosService.getPresignedUrl(arquivo.id)
-    const response = await fetch(presignedUrl)
-    const blob = await response.blob()
+    const data = await arquivosService.download(arquivo.id)
+    const blob = new Blob([data])
     const objectUrl = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = objectUrl

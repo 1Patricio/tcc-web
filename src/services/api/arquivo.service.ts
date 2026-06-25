@@ -21,9 +21,10 @@ export function useArquivoService(resource?: any) {
   }
 
   async function download(arquivoId: string): Promise<ArrayBuffer> {
-    const url = await getPresignedUrl(arquivoId)
-    const response = await fetch(url)
-    return response.arrayBuffer()
+    const response = await api.get(`/arquivos/${arquivoId}/download`, {
+      responseType: 'arraybuffer',
+    })
+    return response.data
   }
 
   async function upload(pastaId: string, file: File) {
