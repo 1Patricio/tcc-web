@@ -289,8 +289,8 @@ async function updateProcesso() {
     await processoService.update(idProcesso.value, {
       ...formData.value,
       valorCausa: Number(formData.value.valorCausa),
-      dataDistribuicao: formData.value.dataDistribuicao ? brToIso(formData.value.dataDistribuicao) : '',
-      dataPrazo: formData.value.dataPrazo ? brToIso(formData.value.dataPrazo) : ''
+      dataDistribuicao: formData.value.dataDistribuicao ? brToIso(formData.value.dataDistribuicao) : null,
+      dataPrazo: formData.value.dataPrazo ? brToIso(formData.value.dataPrazo) : null
     })
     notification.success('Processo atualizado com sucesso!')
   } catch (error: any) {
