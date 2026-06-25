@@ -188,7 +188,7 @@ const gruposDeEventos = computed(() => {
   if (!dados.value) return []
 
   const sorted = [...dados.value.eventos].sort(
-    (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime(),
+    (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime(),
   )
 
   const grupos: { mesAno: string; eventos: TimelineEvento[] }[] = []
