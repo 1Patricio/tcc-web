@@ -63,9 +63,14 @@
         </q-card-section>
         <q-card-actions>
           <q-btn
-            flat dense color="primary" icon="open_in_new" label="Ver no TJRS"
-            :href="`https://www.tjrs.jus.br/buscas/jurisprudencia/?q_palavra_chave=${item.numeroProcesso}&conteudo_busca=ementa_completa`"
-            target="_blank" rel="noopener noreferrer"
+            flat 
+            dense 
+            color="primary" 
+            icon="open_in_new" 
+            label="Ver no TJRS"
+            :href="`https://consulta.tjrs.jus.br/consulta-processual/processo/resumo?numeroProcesso=${item.numeroProcesso}`"
+            target="_blank" 
+            rel="noopener noreferrer"
           />
         </q-card-actions>
       </q-card>
