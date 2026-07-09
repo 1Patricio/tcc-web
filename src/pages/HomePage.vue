@@ -7,7 +7,7 @@
       <div class="flex column">
         <h4 class="text-terciary text-bold q-my-sm">Home</h4>
         <p class="text-terciary text-bold q-my-none">
-          Bem vindo ao <span class="text-primary">INTERM</span>
+          Bem vindo ao <span class="text-primary">NEXTFORUM</span>
         </p>
       </div>
     </div>
@@ -89,7 +89,7 @@
                 v-for="col in props.cols"
                 :key="col.name"
                 :props="props"
-                class="bg-grey-1 text-grey-7"
+                class="bg-grey-1 text-grey-8"
                 style="font-weight: 600"
               >
                 {{ col.label }}

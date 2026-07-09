@@ -151,7 +151,7 @@
 
       <q-separator class="q-mt-xl q-mb-md" />
       <p class="text-center text-caption text-grey-5">
-        Informações fornecidas pelo escritório de advocacia · INTERM
+        Informações fornecidas pelo escritório de advocacia · NEXTFORUM
       </p>
     </div>
   </q-page>

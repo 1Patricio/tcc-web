@@ -5,7 +5,7 @@
   >
     <q-header class="bg-primary text-white">
       <q-toolbar style="height: 80px">
-        <q-toolbar-title class="q-ml-lg text-bold"> INTERM </q-toolbar-title>
+        <q-toolbar-title class="q-ml-lg text-bold"> NEXTFORUM </q-toolbar-title>
 
         <div class="row items-center" style="gap: 12px;">
           <span class="text-white" style="font-size: 14px; font-weight: 500;">{{ nameUserAuth }}</span>

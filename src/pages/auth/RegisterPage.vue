@@ -9,7 +9,7 @@
             style="max-width: 300px"
             contain
           />
-          <h4 class="text-primary text-bold q-mb-sm">INTERM</h4>
+          <h4 class="text-primary text-bold q-mb-sm">NEXTFORUM</h4>
           <p class="text-terciary">Plataforma gerenciamento de processos</p> 
         </div>
       </div>
