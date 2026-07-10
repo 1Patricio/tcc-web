@@ -73,7 +73,7 @@
             />
           </div>
 
-          <div class="col-6">
+          <div class="col-4">
             <InputTextComponent
               v-model="formData.comarca"
               label="Comarca"
@@ -82,12 +82,23 @@
             />
           </div>
 
-          <div class="col-6">
+          <div class="col-4">
             <InputTextComponent
               v-model="formData.vara"
               label="Vara"
               dense
               outlined
+            />
+          </div>
+
+          <div class="col-4">
+            <SelectComponent
+              v-model="formData.esferaProcesso"
+              label="Esfera*"
+              :options="esferasProcesso"
+              option-value="value"
+              option-label="title"
+              :rules="[val => requiredField(val, 'Esfera')]"
             />
           </div>
 
@@ -217,6 +228,11 @@ const tipoAcao = [
   { title: 'Família', value: 'FAMILIA' },
   { title: 'Consumidor', value: 'CONSUMIDOR' },
   { title: 'Outros', value: 'OUTROS' }
+]
+
+const esferasProcesso = [
+  {title: 'Administrativo', value: 'ADMINISTRATIVO'},
+  {title: 'Judicial', value: 'JUDICIAL'}
 ]
 
 function requiredField(val: any, fieldName = 'Campo'): boolean | string {
