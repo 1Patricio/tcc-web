@@ -195,6 +195,7 @@ const formData = ref({
   parteContraria: '',
   tipoAcaoProcesso: null as string | null,
   instancia: null as string | null,
+  esferaProcesso: null as string | null,
   status: null as string | null,
   vara: '',
   comarca: '',
