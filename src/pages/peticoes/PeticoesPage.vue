@@ -48,7 +48,6 @@
         :loading="isLoading"
         row-key="id"
         :hide-bottom="peticoesFiltradas.length > 0"
-        @row-click="(_, row) => onEditarPeticao(row)"
       >
         <template #header="props">
           <q-tr :props="props">
@@ -63,16 +62,32 @@
           </q-tr>
         </template>
 
-        <template #body-cell-nome="props">
-          <q-td :props="props">
-            <span class="text-weight-medium text-grey-9">{{ props.row.nome }}</span>
-          </q-td>
-        </template>
+        <template #body="props">
+          <q-tr
+            :props="props"
+            style="cursor: pointer"
+            @click="onEditarPeticao(props.row)"
+          >
+            <q-td
+              key="nome"
+              :props="props"
+            >
+              <span class="text-weight-medium text-grey-9">{{ props.row.nome }}</span>
+            </q-td>
 
-        <template #body-cell-tipo="props">
-          <q-td :props="props">
-            <span class="text-grey-7">{{ formatTipo(props.row.tipo) }}</span>
-          </q-td>
+            <q-td
+              key="tipo"
+              :props="props"
+            >
+              <span class="text-grey-7">{{ formatTipo(props.row.tipo) }}</span>
+            </q-td>
+
+            <MenuPeticao
+              :copy-item="!!props.row.conteudo"
+              @on-copy="copiarConteudo(props.row)"
+              @on-delete="confirmarExclusao(props.row)"
+            />
+          </q-tr>
         </template>
 
         <template #no-data>
@@ -105,13 +120,18 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { type QTableColumn } from 'quasar'
+import { useQuasar, type QTableColumn } from 'quasar'
 import { useRouter } from 'vue-router'
+import MenuPeticao from '@/components/peticoes/MenuPeticao.vue'
 import type { PeticaoModelo } from '@/types/peticoes/PeticaoModelo'
 import { usePeticaoService } from '@/services/api/peticao.service'
+import { useNotification } from '@/composables/useNotification'
+import { copiarConteudoFormatado } from '@/utils/copiarConteudo'
 
 const router = useRouter()
 const peticaoService = usePeticaoService()
+const $q = useQuasar()
+const { success, error } = useNotification()
 
 const peticoes = ref<PeticaoModelo[]>([])
 const isLoading = ref(true)
@@ -186,5 +206,36 @@ function formatTipo(tipo: string) {
     OUTROS: 'Outros',
   }
   return map[tipo] ?? tipo
+}
+
+async function copiarConteudo(peticao: PeticaoModelo) {
+  if (!peticao.conteudo?.trim()) return
+  try {
+    await copiarConteudoFormatado(peticao.conteudo)
+    success('Conteúdo copiado (formatação preservada para Docs/Word)!')
+  } catch {
+    error('Falha ao copiar o conteúdo.')
+  }
+}
+
+function confirmarExclusao(peticao: PeticaoModelo) {
+  $q.dialog({
+    title: 'Excluir modelo',
+    message: `Deseja excluir "${peticao.nome}"? Esta ação não pode ser desfeita.`,
+    cancel: { label: 'Cancelar', flat: true },
+    ok: { label: 'Excluir', color: 'red' },
+    persistent: true,
+  }).onOk(async () => {
+    if (!peticao.id) return
+    try {
+      await peticaoService.remove(peticao.id)
+      peticoes.value = peticoes.value.filter(
+        (modelo) => modelo.id !== peticao.id,
+      )
+      success('Modelo excluído com sucesso.')
+    } catch {
+      error('Erro ao excluir modelo.')
+    }
+  })
 }
 </script>

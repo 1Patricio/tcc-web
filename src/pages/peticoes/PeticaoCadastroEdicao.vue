@@ -223,6 +223,7 @@ import OpenAI from 'openai'
 import TextEditorComponent from '@/components/TextEditorComponent.vue'
 import type { PeticaoModelo } from '@/types/peticoes/PeticaoModelo'
 import { usePeticaoService } from '@/services/api/peticao.service'
+import { copiarConteudoFormatado } from '@/utils/copiarConteudo'
 
 const client = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -417,25 +418,11 @@ function cancelarGeracao() {
   abortController?.abort()
 }
 
-function htmlToPlainText(html: string): string {
-  const div = document.createElement('div')
-  div.innerHTML = html
-  return div.textContent?.trim() ?? div.innerText?.trim() ?? ''
-}
-
 async function copyText() {
   const html = formData.value.conteudo
   if (!html?.trim()) return
   try {
-    const plain = htmlToPlainText(html)
-    const item = new ClipboardItem({
-      'text/html': new Blob(
-        [`<!DOCTYPE html><html><body>${html}</body></html>`],
-        { type: 'text/html' },
-      ),
-      'text/plain': new Blob([plain], { type: 'text/plain' }),
-    })
-    await navigator.clipboard.write([item])
+    await copiarConteudoFormatado(html)
     $q.notify({
       message: 'Conteúdo copiado (formatação preservada para Docs/Word)!',
       color: 'green-5',
