@@ -188,7 +188,8 @@ const gruposDeEventos = computed(() => {
   if (!dados.value) return []
 
   const sorted = [...dados.value.eventos].sort(
-    (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime(),
+    (eventoA, eventoB) =>
+      new Date(eventoB.data).getTime() - new Date(eventoA.data).getTime(),
   )
 
   const grupos: { mesAno: string; eventos: TimelineEvento[] }[] = []
@@ -241,7 +242,7 @@ const tiposEvento = [
 ]
 
 function tipoLabel(tipo: string) {
-  return tiposEvento.find((t) => t.value === tipo)?.label ?? tipo
+  return tiposEvento.find((tipoEvento) => tipoEvento.value === tipo)?.label ?? tipo
 }
 
 function tipoIcon(tipo: string) {

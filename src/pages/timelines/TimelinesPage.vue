@@ -182,8 +182,8 @@ const filtro = ref('')
 const processosFiltrados = computed(() => {
   if (!filtro.value) return processos.value
   const termo = filtro.value.toLowerCase()
-  return processos.value.filter((p) =>
-    p.numeroProcesso.toLowerCase().includes(termo),
+  return processos.value.filter((processo) =>
+    processo.numeroProcesso.toLowerCase().includes(termo),
   )
 })
 

@@ -7,7 +7,7 @@
       :fonts="fontOptions"
       min-height="12rem"
       class="rounded-borders"
-      @update:model-value="(v: string) => $emit('update:modelValue', v)"
+      @update:model-value="(value: string) => $emit('update:modelValue', value)"
       :label="'a'"
     />
   </div>

@@ -319,8 +319,8 @@ function onSelecionarFoto(event: Event) {
   if (!file) return
   fotoSelecionada.value = file
   const reader = new FileReader()
-  reader.onload = (e) => {
-    previewFoto.value = e.target?.result as string
+  reader.onload = (loadEvent) => {
+    previewFoto.value = loadEvent.target?.result as string
   }
   reader.readAsDataURL(file)
 }

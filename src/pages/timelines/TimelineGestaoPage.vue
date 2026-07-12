@@ -261,7 +261,7 @@
                 label="Título *"
                 outlined
                 dense
-                :rules="[(v) => !!v || 'Título é obrigatório']"
+                :rules="[(value) => !!value || 'Título é obrigatório']"
               />
             </div>
 
@@ -272,7 +272,7 @@
                 :options="tiposEvento"
                 option-value="value"
                 option-label="label"
-                :rules="[(v) => !!v || 'Tipo é obrigatório']"
+                :rules="[(value) => !!value || 'Tipo é obrigatório']"
               />
             </div>
 
@@ -282,7 +282,7 @@
                 label="Data *"
                 outlined
                 dense
-                :rules="[(v) => !!v || 'Data é obrigatória']"
+                :rules="[(value) => !!value || 'Data é obrigatória']"
               />
             </div>
 
@@ -389,7 +389,8 @@ const form = ref<EventoForm>({ titulo: '', tipo: 'OUTROS', data: '', descricao: 
 
 const eventosSorted = computed(() =>
   [...eventos.value].sort(
-    (a, b) => new Date(b.data).getTime() - new Date(a.data).getTime(),
+    (eventoA, eventoB) =>
+      new Date(eventoB.data).getTime() - new Date(eventoA.data).getTime(),
   ),
 )
 
@@ -412,7 +413,7 @@ const tiposEvento = [
 ]
 
 function tipoLabel(tipo: string) {
-  return tiposEvento.find((t) => t.value === tipo)?.label ?? tipo
+  return tiposEvento.find((tipoEvento) => tipoEvento.value === tipo)?.label ?? tipo
 }
 
 function tipoColorHex(tipo: string) {
@@ -517,7 +518,7 @@ async function salvarEvento() {
         editandoEvento.value.id,
         payload,
       )
-      const idx = eventos.value.findIndex((e) => e.id === atualizado.id)
+      const idx = eventos.value.findIndex((evento) => evento.id === atualizado.id)
       if (idx !== -1) eventos.value[idx] = atualizado
       notification.success('Evento atualizado!')
     } else {
@@ -539,7 +540,7 @@ async function excluirEvento() {
   try {
     await timelineService.remove(eventoParaExcluir.value.id)
     eventos.value = eventos.value.filter(
-      (e) => e.id !== eventoParaExcluir.value!.id,
+      (evento) => evento.id !== eventoParaExcluir.value!.id,
     )
     notification.success('Evento excluído.')
     dialogExclusao.value = false

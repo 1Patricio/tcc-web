@@ -180,7 +180,7 @@ const tipoOptions = [
 const statsCards = computed(() =>
   statusOptions.map((opt) => ({
     ...opt,
-    total: stats.value.find((s) => s.status === opt.value)?.total ?? 0,
+    total: stats.value.find((stat) => stat.status === opt.value)?.total ?? 0,
   })),
 )
 
@@ -251,11 +251,11 @@ function prazoLabel(val: string): string {
 }
 
 function formatStatus(val: string): string {
-  return statusOptions.find((o) => o.value === val)?.label ?? val
+  return statusOptions.find((option) => option.value === val)?.label ?? val
 }
 
 function formatTipo(val: string): string {
-  return tipoOptions.find((o) => o.value === val)?.label ?? val
+  return tipoOptions.find((option) => option.value === val)?.label ?? val
 }
 
 onMounted(() => load())

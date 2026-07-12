@@ -14,16 +14,16 @@
       >
         <canvas class="canvas" />
 
-        <div class="annotation-layer" @click="(e) => handleClick(e, index)">
-          <template v-for="a in annotations" :key="a.id">
+        <div class="annotation-layer" @click="(event) => handleClick(event, index)">
+          <template v-for="annotation in annotations" :key="annotation.id">
             <q-icon
-              v-if="a.page === index"
+              v-if="annotation.page === index"
               name="place"
               size="20px"
               :style="{
                 position: 'absolute',
-                left: a.x + '%',
-                top: a.y + '%',
+                left: annotation.x + '%',
+                top: annotation.y + '%',
               }"
             />
           </template>
@@ -57,7 +57,9 @@ const emit = defineEmits(['add-annotation'])
 
 let pages: any[] = []
 const pageCount = ref(0)
-const pageIndices = computed(() => Array.from({ length: pageCount.value }, (_, i) => i))
+const pageIndices = computed(() =>
+  Array.from({ length: pageCount.value }, (_, index) => index),
+)
 const loading = ref(false)
 const loadingProgress = ref(0)
 const pageDimensions = ref<{ width: number; height: number }[]>([])

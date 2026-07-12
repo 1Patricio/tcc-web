@@ -123,9 +123,9 @@ const peticoesFiltradas = computed(() => {
   const termo = busca.value?.trim().toLowerCase()
   if (!termo) return peticoes.value
   return peticoes.value.filter(
-    (p) =>
-      p.nome.toLowerCase().includes(termo) ||
-      formatTipo(p.tipo).toLowerCase().includes(termo),
+    (peticao) =>
+      peticao.nome.toLowerCase().includes(termo) ||
+      formatTipo(peticao.tipo).toLowerCase().includes(termo),
   )
 })
 

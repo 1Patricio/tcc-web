@@ -257,9 +257,9 @@ const emit = defineEmits<{
 const model = ref(props.modelValue)
 watch(
   () => props.modelValue,
-  (v) => (model.value = v),
+  (value) => (model.value = value),
 )
-watch(model, (v) => emit('update:modelValue', v))
+watch(model, (value) => emit('update:modelValue', value))
 
 const viewerRef = ref<InstanceType<typeof PdfViewer> | null>(null)
 
