@@ -13,7 +13,7 @@
             Documentos
           </span>
           <template
-            v-for="(crumb, i) in breadcrumbs"
+            v-for="(crumb, index) in breadcrumbs"
             :key="crumb.id"
           >
             <q-icon
@@ -23,12 +23,12 @@
             />
             <span
               :class="
-                i === breadcrumbs.length - 1
+                index === breadcrumbs.length - 1
                   ? 'text-primary text-bold text-sm'
                   : 'text-grey-6 cursor-pointer text-sm'
               "
               @click="
-                i < breadcrumbs.length - 1 &&
+                index < breadcrumbs.length - 1 &&
                 router.push({ name: 'arquivos', params: { id: crumb.id } })
               "
             >
@@ -42,20 +42,20 @@
       </div>
 
       <div>
-        <q-btn
-          icon="cloud_upload"
-          label="Upload Arquivo"
-          color="primary"
-          no-caps
-          :loading="isLoading"
-          @click="triggerFilePicker"
-        />
-        <q-file
-          ref="fileRef"
-          v-model="file"
-          style="display: none"
-          @update:model-value="onFileSelected"
-        />
+        <NextforumFileInput
+          :accept="tiposPermitidos"
+          accept-hint="Use PDF, imagem, Word, Excel ou CSV."
+          :max-size-mb="50"
+          @change="onFilesSelected"
+        >
+          <q-btn
+            icon="cloud_upload"
+            label="Upload Arquivos"
+            color="primary"
+            no-caps
+            :loading="isLoading"
+          />
+        </NextforumFileInput>
       </div>
     </div>
   </div>
@@ -219,15 +219,24 @@
     :pdf-data="pdfData"
     :loading="pdfLoading"
   />
+
+  <UploadArquivosDialog
+    v-model="uploadDialog"
+    :files="filesToUpload"
+    :pasta-id="pastaId"
+    @uploaded="onUploaded"
+  />
 </template>
 
 <script setup lang="ts">
 import PdfViewerDialog from '@/components/documentos/PdfViewerDialog.vue'
+import NextforumFileInput from '@/components/generic/NextforumFileInput.vue'
+import UploadArquivosDialog from '@/components/arquivos/UploadArquivosDialog.vue'
 import { useArquivoService } from '@/services/api/arquivo.service'
 import { usePastaService } from '@/services/api/pasta.service'
 import type { Arquivo } from '@/types/arquivos/Arquivo'
-import { useQuasar, QFile, type QTableColumn } from 'quasar'
-import { onMounted, ref, watch } from 'vue'
+import { useQuasar, type QTableColumn } from 'quasar'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useNotification } from '@/composables/useNotification'
 import { useRoute, useRouter } from 'vue-router'
 import { getFileIcon } from '@/utils/fileIcon'
@@ -237,7 +246,7 @@ const arquivosService = useArquivoService()
 const pastaService = usePastaService()
 const route = useRoute()
 const router = useRouter()
-const { warning, success, error } = useNotification()
+const { success, error } = useNotification()
 const $q = useQuasar()
 
 const isLoading = ref(false)
@@ -245,15 +254,15 @@ const pasta = ref<any>(null)
 const breadcrumbs = ref<{ id: string; nome: string }[]>([])
 const documentos = ref<any[]>([])
 
-const file = ref<File | null>(null)
-const fileRef = ref<InstanceType<typeof QFile> | null>(null)
+const uploadDialog = ref(false)
+const filesToUpload = ref<File[]>([])
 
 const pdfDialog = ref(false)
 const pdfLoading = ref(false)
 const pdfData = ref<ArrayBuffer | null>(null)
 const selectedArquivo = ref<Arquivo | null>(null)
 
-const triggerFilePicker = () => fileRef.value?.pickFiles()
+const pastaId = computed(() => route.params.id as string)
 
 async function carregar(id: string) {
   try {
@@ -264,11 +273,14 @@ async function carregar(id: string) {
     ])
     pasta.value = pastaData
     breadcrumbs.value = buildBreadcrumbs(pastaData)
-    const subpastas = (pastaData.subpastas ?? []).map((p: any) => ({
-      ...p,
+    const subpastas = (pastaData.subpastas ?? []).map((subpasta: any) => ({
+      ...subpasta,
       _type: 'pasta',
     }))
-    const files = (arquivos ?? []).map((a: any) => ({ ...a, _type: 'arquivo' }))
+    const files = (arquivos ?? []).map((arquivo: any) => ({
+      ...arquivo,
+      _type: 'arquivo',
+    }))
     documentos.value = [...subpastas, ...files]
   } catch (err) {
     console.error(err)
@@ -305,50 +317,28 @@ const columns: QTableColumn[] = [
   },
 ]
 
-function isValidFile(arquivo: File) {
-  const allowed = [
-    'application/pdf',
-    'image/png',
-    'image/jpeg',
-    'image/gif',
-    'image/webp',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-excel',
-    'text/csv',
-    'text/plain',
-  ]
-  if (!allowed.includes(arquivo.type)) {
-    warning(
-      'Tipo de arquivo não permitido. Use PDF, imagem, Word, Excel ou CSV.',
-    )
-    return false
-  }
-  if (arquivo.size > 50 * 1024 * 1024) {
-    warning('Arquivo muito grande. O limite é 50MB.')
-    return false
-  }
-  return true
+const tiposPermitidos = [
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+  'text/csv',
+  'text/plain',
+]
+
+function onFilesSelected(files: File[]) {
+  filesToUpload.value = files
+  uploadDialog.value = true
 }
 
-async function onFileSelected(selectedFile: File | null) {
-  if (!selectedFile || !isValidFile(selectedFile)) {
-    file.value = null
-    return
-  }
-  try {
-    isLoading.value = true
-    const resultado = await arquivosService.upload(
-      route.params.id as string,
-      selectedFile,
-    )
-    documentos.value.push({ ...resultado, _type: 'arquivo' })
-  } catch (err) {
-    console.error('Erro no upload:', err)
-  } finally {
-    isLoading.value = false
-    file.value = null
-  }
+function onUploaded(criados: Arquivo[]) {
+  documentos.value.push(
+    ...criados.map((arquivo) => ({ ...arquivo, _type: 'arquivo' })),
+  )
 }
 
 async function loadMore(_: number, done: (stop?: boolean) => void) {
@@ -412,7 +402,9 @@ function confirmarExclusao(arquivo: Arquivo) {
   }).onOk(async () => {
     try {
       await arquivosService.remove(arquivo.id)
-      documentos.value = documentos.value.filter((d) => d.id !== arquivo.id)
+      documentos.value = documentos.value.filter(
+        (documento) => documento.id !== arquivo.id,
+      )
       success('Arquivo excluído com sucesso.')
     } catch (err) {
       error('Erro ao excluir arquivo.')
