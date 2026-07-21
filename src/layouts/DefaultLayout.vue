@@ -131,6 +131,7 @@ const menuItems = [
     route: 'jurisprudencia-rs',
   },
   { icon: 'timeline', label: 'Timeline', route: 'timelines' },
+  { icon: 'settings', label: 'Configurações', route: 'configuracoes-usuarios' },
 ]
 
 function onMouseenter() {

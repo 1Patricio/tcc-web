@@ -13,11 +13,6 @@ const router = createRouter({
           path: '',
           name: 'login',
           component: () => import('@/pages/auth/LoginPage.vue')
-        },
-        {
-          path: 'register',
-          name: 'register',
-          component: () => import('@/pages/auth/RegisterPage.vue')
         }
       ]
     },
@@ -123,6 +118,24 @@ const router = createRouter({
           path: 'perfil',
           name: 'perfil',
           component: () => import('@/pages/auth/AlterarSenhaPage.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'configuracoes/usuarios',
+          name: 'configuracoes-usuarios',
+          component: () => import('@/pages/configuracoes/usuarios/UsuariosPage.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'configuracoes/usuarios/novo',
+          name: 'configuracoes-usuarios-novo',
+          component: () => import('@/pages/configuracoes/usuarios/UsuarioCadastroEdicao.vue'),
+          meta: { requiresAuth: true },
+        },
+        {
+          path: 'configuracoes/usuarios/:id',
+          name: 'configuracoes-usuarios-editar',
+          component: () => import('@/pages/configuracoes/usuarios/UsuarioCadastroEdicao.vue'),
           meta: { requiresAuth: true },
         }
       ],

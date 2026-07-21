@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <div class="flex justify-between items-center q-mb-sm" style="height: 80px;">
       <div class="flex column">
-        <h4 class="text-terciary text-bold q-my-sm">{{editMode ? 'Editar Cliente' : 'Novo Cliente'}}</h4>
+        <h4 class="text-terciary text-bold q-my-sm">{{ editMode ? 'Editar Usuário' : 'Novo Usuário' }}</h4>
       </div>
     </div>
     <div class="bg-white q-pa-lg" style="border: 0.4px solid gray;">
@@ -28,48 +28,30 @@
             label="Email"
             dense
             outlined
+            :rules="[val => requiredField(val, 'Email')]"
           />
         </div>
 
-        <div class="col-4">
+        <div class="col-6">
           <InputTextComponent
-            v-model="formData.telefone"
-            label="Telefone"
+            v-model="formData.password"
+            :label="editMode ? 'Nova senha (opcional)' : 'Senha'"
+            type="password"
             dense
             outlined
+            :rules="editMode ? [] : [val => requiredField(val, 'Senha'), val => minLength(val, 6, 'Senha')]"
           />
         </div>
 
-        <div class="col-4">
+        <div v-if="editMode" class="col-6">
           <SelectComponent
-            v-model="formData.tipoCliente"
-            label="Tipo Cliente"
-            :options="tipoCliente"
-            option-value="value"
-            option-label="title"
-            :rules="[val => requiredField(val, 'Tipo Cliente')]"
-          />
-        </div>
-
-        <div class="col-4">
-          <SelectComponent
-            v-model="formData.status"
+            v-model="formData.ativo"
             label="Status"
-            :options="status"
+            :options="statusOptions"
             option-value="value"
             option-label="title"
           />
         </div>
-
-        <div class="col-12">
-          <InputTextComponent
-            v-model="formData.observacoes"
-            label="Observações"
-            dense
-            outlined
-          />
-        </div>
-
       </div>
 
       <div class="row justify-end q-mt-lg">
@@ -79,7 +61,7 @@
           :label="'Cancelar'"
           class="q-mr-sm"
           flat
-          :to="{name: 'clientes'}"
+          :to="{name: 'configuracoes-usuarios'}"
         />
 
         <q-btn
@@ -99,97 +81,109 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import type { QForm, QStepper } from 'quasar';
+import { useQuasar, type QForm } from 'quasar';
 import { useNotification } from '@/composables/useNotification';
 import InputTextComponent from '@/components/InputTextComponent.vue';
 import SelectComponent from '@/components/SelectComponent.vue';
-import { useClienteService } from '@/services';
+import { useUsuarioService } from '@/services';
 import { getApiErrorMessage } from '@/utils/apiError';
 
 const route = useRoute()
-const clienteService = useClienteService()
+const usuarioService = useUsuarioService()
 const notification = useNotification()
 const router = useRouter()
+const $q = useQuasar()
 
-const idProcesso = ref<string | undefined>(undefined)
+const idUsuario = ref<string | undefined>(undefined)
 const editMode = ref(false)
-const step = ref(1)
-const stepperRef = ref<QStepper>()
-const search = ref('')
 const isLoading = ref(false)
+const ativoOriginal = ref(true)
 const formRef = ref<InstanceType<typeof QForm> | null>(null)
 
 const formData = ref({
   id: '',
   nome: '',
   email: '',
-  telefone: '',
-  tipoCliente: null,
-  status: true,
-  observacoes: ''
+  password: '',
+  ativo: true,
 })
 
-
-const status = [
+const statusOptions = [
   { title: 'Ativo', value: true },
   { title: 'Inativo', value: false },
 ]
-
-const tipoCliente = [
-  { title: 'Pessoa Física', value: 'PESSOA_FISICA' },
-  { title: 'Pessoa Jurídica', value: 'PESSOA_JURIDICA' },
-]
-
 
 onMounted(async () => {
   try {
     const idRota = route.params.id as string
 
-    if(idRota) {
-      idProcesso.value = idRota
-      const response = await clienteService.getById(idProcesso.value)
-      formData.value = response
-      if(response) editMode.value = true
+    if (idRota) {
+      idUsuario.value = idRota
+      const response = await usuarioService.getById(idUsuario.value)
+      formData.value = { ...response, password: '' }
+      ativoOriginal.value = response.ativo
+      editMode.value = true
     }
-  } catch(error) {
+  } catch (error) {
     console.error(error)
   }
 })
 
-function requiredField(val: any,fieldName = 'Campo'): boolean | string {
+function requiredField(val: any, fieldName = 'Campo'): boolean | string {
   return !!val || `${fieldName} é obrigatório`
+}
+
+function minLength(val: string, length = 6, fieldName = 'Senha') {
+  return (val?.length ?? 0) >= length || `${fieldName} deve ter no mínimo ${length} caracteres`
 }
 
 async function handleSubmit() {
   if (!formRef.value) return
 
   const isValid = await formRef.value.validate()
-  
+
   if (!isValid) {
     notification.error('Formulário inválido')
     return
   }
 
+  if (editMode.value && ativoOriginal.value && !formData.value.ativo) {
+    $q.dialog({
+      title: 'Inativar usuário',
+      message: `Ao inativar "${formData.value.nome}", o acesso dele ao sistema é bloqueado imediatamente. Deseja continuar?`,
+      cancel: { label: 'Cancelar', flat: true },
+      ok: { label: 'Inativar', color: 'red' },
+      persistent: true,
+    }).onOk(salvarUsuario)
+    return
+  }
+
+  await salvarUsuario()
+}
+
+async function salvarUsuario() {
   isLoading.value = true
   try {
     if (editMode.value) {
-      await updateCliente()
+      await updateUsuario()
     } else {
-      await createCliente()
+      await createUsuario()
     }
   } finally {
     isLoading.value = false
   }
 }
 
-async function createCliente() {
+async function createUsuario() {
   try {
-    await clienteService.create({ 
-      ...formData.value,
+    await usuarioService.create({
+      nome: formData.value.nome,
+      email: formData.value.email,
+      password: formData.value.password,
     })
 
-    notification.success('Cliente cadastrado com sucesso!')
-    router.push({name: 'clientes'})
+    notification.success('Usuário cadastrado com sucesso!')
+    router.push({ name: 'configuracoes-usuarios' })
   } catch (error: any) {
     if (error.response) {
       notification.error('Não foi possível realizar o cadastro. Erro:' + getApiErrorMessage(error), 9000)
@@ -198,16 +192,23 @@ async function createCliente() {
   }
 }
 
-async function updateCliente() {
+async function updateUsuario() {
   try {
-    await clienteService.update(formData.value.id, {
-      ...formData.value,
+    await usuarioService.update(formData.value.id, {
+      nome: formData.value.nome,
+      email: formData.value.email,
+      ativo: formData.value.ativo,
     })
 
-    notification.success('Cliente atualizado com sucesso!')
+    if (formData.value.password) {
+      await usuarioService.changeSenha(formData.value.id, formData.value.password)
+    }
+
+    notification.success('Usuário atualizado com sucesso!')
+    router.push({ name: 'configuracoes-usuarios' })
   } catch (error: any) {
     if (error.response) {
-      notification.error('Não foi possível realizar a atualização. Erro:' + getApiErrorMessage(error), 9000)
+      notification.error('Não foi possível atualizar o usuário. Erro:' + getApiErrorMessage(error), 9000)
       console.error('ERRO', error.data)
     }
   }

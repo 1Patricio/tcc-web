@@ -285,6 +285,7 @@ import { useRouter } from 'vue-router'
 import type { QForm } from 'quasar'
 import { useAuthService } from '@/services/api/auth.service'
 import { useNotification } from '@/composables/useNotification'
+import { getApiErrorMessage } from '@/utils/apiError'
 
 const router = useRouter()
 const authService = useAuthService()
@@ -357,7 +358,7 @@ async function handleSubmit() {
     }
     fotoSelecionada.value = null
   } catch (err: any) {
-    notification.error(err?.response?.data?.error ?? 'Erro ao salvar perfil')
+    notification.error(getApiErrorMessage(err, 'Erro ao salvar perfil'))
   } finally {
     isLoading.value = false
   }

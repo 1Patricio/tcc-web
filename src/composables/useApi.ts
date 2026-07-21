@@ -35,9 +35,14 @@ export function useApi(baseUrl?: string) {
   apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
-      const message =
-        error.response?.data?.message || 'Ocorreu um erro inesperado. Tente novamente.'
-      useNotification().error(message)
+      // Ações que alteram dado (criar/editar/excluir/login) já mostram sua própria
+      // mensagem de erro na tela; o aviso genérico aqui é só para leituras (GET).
+      const method = error.config?.method?.toLowerCase()
+      if (method === 'get') {
+        const message =
+          error.response?.data?.message || 'Ocorreu um erro inesperado. Tente novamente.'
+        useNotification().error(message)
+      }
       return Promise.reject(error)
     }
   )

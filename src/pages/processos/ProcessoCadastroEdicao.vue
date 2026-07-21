@@ -175,6 +175,7 @@ import SelectComponent from '@/components/SelectComponent.vue'
 import type { Cliente } from '@/types/clientes/Cliente'
 import { useClienteService, useProcessoService } from '@/services'
 import { isoToBr, brToIso } from '@/utils/date'
+import { getApiErrorMessage } from '@/utils/apiError'
 
 const route = useRoute()
 const router = useRouter()
@@ -293,7 +294,7 @@ async function createProcesso() {
     router.push({ name: 'processos' })
   } catch (error: any) {
     if (error.response) {
-      notification.error('Não foi possível realizar o cadastro. Erro: ' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
+      notification.error('Não foi possível realizar o cadastro. Erro: ' + getApiErrorMessage(error), 9000)
       console.error('ERRO', error.data)
     }
   }
@@ -312,7 +313,7 @@ async function updateProcesso() {
     notification.success('Processo atualizado com sucesso!')
   } catch (error: any) {
     if (error.response) {
-      notification.error('Não foi possível realizar a atualização. Erro: ' + (error.response?.data?.detail || error.code || error.message || ''), 9000)
+      notification.error('Não foi possível realizar a atualização. Erro: ' + getApiErrorMessage(error), 9000)
       console.error('ERRO', error.data)
     }
   }
