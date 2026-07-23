@@ -121,8 +121,8 @@ const currentRoute = computed(() => (route.name as string) ?? '')
 
 const menuItems = [
   { icon: 'home', label: 'Home', route: 'home' },
-  { icon: 'work', label: 'Processos', route: 'processos' },
   { icon: 'group', label: 'Clientes', route: 'clientes' },
+  { icon: 'work', label: 'Processos', route: 'processos' },
   { icon: 'folders', label: 'Documentos', route: 'pastas' },
   { icon: 'task', label: 'Modelos de Petição', route: 'peticoes' },
   {
